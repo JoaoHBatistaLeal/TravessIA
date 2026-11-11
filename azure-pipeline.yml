@@ -4,7 +4,7 @@ trigger:
       - main
 
 pool:
-  vmImage: 'ubuntu-latest'
+  name: 'Default'
 
 variables:
   buildConfiguration: 'Release'
@@ -66,7 +66,7 @@ stages:
               command: 'publish'
               publishWebProjects: false
               projects: 'TravessIA.API/TravessIA.API.csproj'
-              arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/publish'
+              arguments: '--configuration $(buildConfiguration) --runtime linux-x64 --self-contained true --output $(Build.ArtifactStagingDirectory)/publish'
               zipAfterPublish: true
 
           - task: PublishBuildArtifacts@1
@@ -98,5 +98,6 @@ stages:
               azureSubscription: '$(azureServiceConnection)'
               appType: 'webAppLinux'
               appName: '$(webAppName)'
+              resourceGroupName: '$(resourceGroupName)'
               package: '$(System.DefaultWorkingDirectory)/drop/**/*.zip'
               appSettings: '-KEYVAULT_URI $(keyVaultUri) -ASPNETCORE_ENVIRONMENT Production'
