@@ -14,7 +14,8 @@ public sealed class PerfilMobilidadeConfiguration : IEntityTypeConfiguration<Per
 
         builder.Property(p => p.Id)
             .HasColumnName("id_perfil")
-            .ValueGeneratedNever();
+            .ValueGeneratedOnAdd()
+            .HasDefaultValueSql("NEWID()");
 
         builder.Property(p => p.Codigo)
             .HasColumnName("codigo")

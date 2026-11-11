@@ -69,17 +69,17 @@ public class TravessIAIntegrationTests
     private static async Task<AuthResponse> RegisterAndAuthenticateAsync(
         HttpClient client,
         string role,
-        Guid? idPerfil = null,
+        string? codigoPerfil = "IDOSO",
         string consentimentoLgpd = "S")
     {
         var uniqueId = Guid.NewGuid().ToString("N")[..10];
         var registerRequest = new RegisterRequest(
-            idPerfil ?? TravessIASeeder.PerfilIdosoId,
             $"Usuario {role} {uniqueId}",
             $"{role.ToLowerInvariant()}.{uniqueId}@travessia.sp.gov.br",
             GenerateRuntimeAccessPhrase(),
-            role,
             1970,
+            codigoPerfil,
+            role,
             consentimentoLgpd);
 
         var response = await client.PostAsJsonAsync("/api/v1/auth/register", registerRequest);
@@ -128,6 +128,9 @@ public class TravessIAIntegrationTests
         var swaggerJson = await jsonResponse.Content.ReadAsStringAsync();
         Assert.Contains("TravessIA CitizenTech API", swaggerJson);
         Assert.Contains("\"format\": \"uuid\"", swaggerJson);
+        Assert.Contains("maria.cidada@travessia.com.br", swaggerJson);
+        Assert.Contains("gestor@travessia.com.br", swaggerJson);
+        Assert.Contains("BEACON-SP-010", swaggerJson);
 
         var uiResponse = await client.GetAsync("/swagger/index.html");
         Assert.Equal(HttpStatusCode.OK, uiResponse.StatusCode);
@@ -145,12 +148,12 @@ public class TravessIAIntegrationTests
         var rawAccess = GenerateRuntimeAccessPhrase();
         var email = $"cidadao.auth.{Guid.NewGuid():N}@sp.gov.br";
         var registerReq = new RegisterRequest(
-            TravessIASeeder.PerfilIdosoId,
             "Maria Cidada Prioritaria",
             email,
             rawAccess,
-            Usuario.RoleCidadao,
             1950,
+            null,
+            Usuario.RoleCidadao,
             "S");
 
         var registerRes = await client.PostAsJsonAsync("/api/v1/auth/register", registerReq);
@@ -158,6 +161,7 @@ public class TravessIAIntegrationTests
         var registeredAuth = await registerRes.Content.ReadFromJsonAsync<AuthResponse>();
         Assert.NotNull(registeredAuth);
         Assert.False(string.IsNullOrWhiteSpace(registeredAuth.AccessToken));
+        Assert.Equal(TravessIASeeder.PerfilIdosoId, registeredAuth.IdPerfil);
 
         var badLoginRes = await client.PostAsJsonAsync(
             "/api/v1/auth/login",
@@ -225,7 +229,7 @@ public class TravessIAIntegrationTests
         await using var factory = new TravessIAWebFactory();
         using var client = factory.CreateClient();
 
-        var gestorAuth = await RegisterAndAuthenticateAsync(client, Usuario.RoleGestor);
+        var gestorAuth = await RegisterAndAuthenticateAsync(client, Usuario.RoleGestor, "GESTOR_INIT" == "GESTOR_INIT" ? "IDOSO" : null);
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", gestorAuth.AccessToken);
 
@@ -245,13 +249,14 @@ public class TravessIAIntegrationTests
         Assert.NotNull(updatedPerfil);
         Assert.Equal(15, updatedPerfil.SegExtraChuva);
 
+        var rawPass = GenerateRuntimeAccessPhrase();
         var createUsuarioReq = new UsuarioRequest(
-            createdPerfil.IdPerfil,
             "Ana Paula Cidada",
             $"ana.paula.{Guid.NewGuid():N}@sp.gov.br",
-            GenerateRuntimeAccessPhrase(),
-            Usuario.RoleCidadao,
+            rawPass,
             1992,
+            createdPerfil.Codigo,
+            Usuario.RoleCidadao,
             "S");
         var createUsuarioRes = await client.PostAsJsonAsync("/api/v1/usuarios", createUsuarioReq);
         Assert.Equal(HttpStatusCode.Created, createUsuarioRes.StatusCode);
@@ -262,11 +267,11 @@ public class TravessIAIntegrationTests
         Assert.Equal(HttpStatusCode.OK, getUsuarioRes.StatusCode);
 
         var updateUsuarioReq = new UsuarioUpdateRequest(
-            createdPerfil.IdPerfil,
             "Ana Paula Atualizada",
             createdUsuario.Email,
-            Usuario.RoleCidadao,
             1992,
+            createdPerfil.Codigo,
+            Usuario.RoleCidadao,
             "S");
         var updateUsuarioRes = await client.PutAsJsonAsync($"/api/v1/usuarios/{createdUsuario.IdUsuario}", updateUsuarioReq);
         Assert.Equal(HttpStatusCode.OK, updateUsuarioRes.StatusCode);
@@ -275,11 +280,11 @@ public class TravessIAIntegrationTests
         Assert.Equal("Ana Paula Atualizada", updatedUsuario.Nome);
 
         var lgpdNoUpdateReq = new UsuarioUpdateRequest(
-            createdPerfil.IdPerfil,
             "Ana Paula Sem LGPD",
             createdUsuario.Email,
-            Usuario.RoleCidadao,
             1992,
+            createdPerfil.Codigo,
+            Usuario.RoleCidadao,
             "N");
         var lgpdNoUpdateRes = await client.PutAsJsonAsync($"/api/v1/usuarios/{createdUsuario.IdUsuario}", lgpdNoUpdateReq);
         Assert.Equal(HttpStatusCode.BadRequest, lgpdNoUpdateRes.StatusCode);
@@ -308,14 +313,18 @@ public class TravessIAIntegrationTests
         var updateSemaforoRes = await client.PutAsJsonAsync($"/api/v1/semaforos/{createdSemaforo.IdSemaforo}", updateSemaforoReq);
         Assert.Equal(HttpStatusCode.OK, updateSemaforoRes.StatusCode);
 
+        var anaLoginRes = await client.PostAsJsonAsync("/api/v1/auth/login", new LoginRequest(createdUsuario.Email, rawPass));
+        var anaAuth = await anaLoginRes.Content.ReadFromJsonAsync<AuthResponse>();
+        Assert.NotNull(anaAuth);
+
         using var acionamentoMsg = new HttpRequestMessage(HttpMethod.Post, "/api/v1/acionamentos");
+        acionamentoMsg.Headers.Authorization = new AuthenticationHeaderValue("Bearer", anaAuth.AccessToken);
         acionamentoMsg.Headers.Add("Idempotency-Key", $"crud-idem-{Guid.NewGuid():N}");
         acionamentoMsg.Content = JsonContent.Create(new AcionamentoRequest(
-            createdUsuario.IdUsuario,
-            createdSemaforo.IdSemaforo,
             2.4m,
             Acionamento.ClimaChuvaModerada,
-            14.5m));
+            14.5m,
+            createdSemaforo.CodigoBeacon));
 
         var createAcionamentoRes = await client.SendAsync(acionamentoMsg);
         Assert.Equal(HttpStatusCode.Created, createAcionamentoRes.StatusCode);
@@ -327,11 +336,10 @@ public class TravessIAIntegrationTests
         Assert.Equal(HttpStatusCode.OK, getAcionamentoRes.StatusCode);
 
         var updateAcionamentoReq = new AcionamentoRequest(
-            createdUsuario.IdUsuario,
-            createdSemaforo.IdSemaforo,
             1.8m,
             Acionamento.ClimaTempestade,
             32.0m,
+            createdSemaforo.CodigoBeacon,
             createdAcionamento.ChaveIdempotencia);
         var updateAcionamentoRes = await client.PutAsJsonAsync(
             $"/api/v1/acionamentos/{createdAcionamento.IdAcionamento}",
@@ -409,19 +417,19 @@ public class TravessIAIntegrationTests
         await using var factory = new TravessIAWebFactory();
         using var client = factory.CreateClient();
 
-        var cidadaoAuth = await RegisterAndAuthenticateAsync(client, Usuario.RoleCidadao, idPerfil: TravessIASeeder.PerfilIdosoId);
+        var cidadaoAuth = await RegisterAndAuthenticateAsync(client, Usuario.RoleCidadao, codigoPerfil: "IDOSO");
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", cidadaoAuth.AccessToken);
 
         var payload = new AcionamentoRequest(
-            cidadaoAuth.IdUsuario,
-            TravessIASeeder.SemaforoSp001Id,
             2.2m,
             Acionamento.ClimaChuvaModerada,
-            18.0m);
+            18.0m,
+            "BEACON-SP-001");
 
-        var missingKeyRes = await client.PostAsJsonAsync("/api/v1/acionamentos", payload);
-        Assert.Equal(HttpStatusCode.BadRequest, missingKeyRes.StatusCode);
+        var autoKeyRes = await client.PostAsJsonAsync("/api/v1/acionamentos", payload);
+        Assert.Equal(HttpStatusCode.Created, autoKeyRes.StatusCode);
+        Assert.Equal("false", autoKeyRes.Headers.GetValues("X-Idempotent-Replayed").Single());
 
         var idempotencyKey = $"idem-rain-{Guid.NewGuid():N}";
 
@@ -434,6 +442,8 @@ public class TravessIAIntegrationTests
         Assert.Equal("false", firstRes.Headers.GetValues("X-Idempotent-Replayed").Single());
         var firstBody = await firstRes.Content.ReadFromJsonAsync<AcionamentoResponse>();
         Assert.NotNull(firstBody);
+        Assert.Equal(cidadaoAuth.IdUsuario, firstBody.IdUsuario);
+        Assert.Equal(TravessIASeeder.SemaforoSp001Id, firstBody.IdSemaforo);
 
         using var secondMsg = new HttpRequestMessage(HttpMethod.Post, "/api/v1/acionamentos");
         secondMsg.Headers.Add("Idempotency-Key", idempotencyKey);
@@ -453,11 +463,10 @@ public class TravessIAIntegrationTests
         using var outOfRangeMsg = new HttpRequestMessage(HttpMethod.Post, "/api/v1/acionamentos");
         outOfRangeMsg.Headers.Add("Idempotency-Key", $"idem-far-{Guid.NewGuid():N}");
         outOfRangeMsg.Content = JsonContent.Create(new AcionamentoRequest(
-            cidadaoAuth.IdUsuario,
-            TravessIASeeder.SemaforoSp001Id,
             8.5m,
             Acionamento.ClimaSeco,
-            0m));
+            0m,
+            "BEACON-SP-001"));
 
         var outOfRangeRes = await client.SendAsync(outOfRangeMsg);
         Assert.Equal(HttpStatusCode.BadRequest, outOfRangeRes.StatusCode);

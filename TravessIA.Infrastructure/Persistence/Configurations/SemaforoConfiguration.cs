@@ -14,7 +14,8 @@ public sealed class SemaforoConfiguration : IEntityTypeConfiguration<Semaforo>
 
         builder.Property(s => s.Id)
             .HasColumnName("id_semaforo")
-            .ValueGeneratedNever();
+            .ValueGeneratedOnAdd()
+            .HasDefaultValueSql("NEWID()");
 
         builder.Property(s => s.CodigoBeacon)
             .HasColumnName("codigo_beacon")

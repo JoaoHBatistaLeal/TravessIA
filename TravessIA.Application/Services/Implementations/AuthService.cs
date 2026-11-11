@@ -27,25 +27,58 @@ public sealed class AuthService(
 
     public AuthResponse Register(RegisterRequest request)
     {
-        if (!perfilRepository.ExistsById(request.IdPerfil))
-            throw new DomainException("Perfil de mobilidade informado nao existe.");
-
         if (usuarioRepository.ExistsByEmail(request.Email))
             throw new DomainException("Ja existe um usuario cadastrado com este e-mail.");
 
+        var idPerfil = ResolvePerfilId(perfilRepository, request.CodigoPerfil, request.AnoNascimento);
+        var resolvedRole = string.IsNullOrWhiteSpace(request.Role) ||
+                           string.Equals(request.Role.Trim(), "STRING", StringComparison.OrdinalIgnoreCase)
+            ? Usuario.RoleCidadao
+            : request.Role.Trim();
+        var resolvedConsent = string.IsNullOrWhiteSpace(request.ConsentimentoLgpd) ||
+                              string.Equals(request.ConsentimentoLgpd.Trim(), "STRING", StringComparison.OrdinalIgnoreCase)
+            ? "S"
+            : request.ConsentimentoLgpd.Trim();
+
         var usuario = new Usuario(
-            request.IdPerfil,
+            idPerfil,
             request.Nome,
             request.Email,
             request.Senha,
-            request.Role,
+            resolvedRole,
             request.AnoNascimento,
-            request.ConsentimentoLgpd);
+            resolvedConsent,
+            Guid.NewGuid());
 
         usuario.EnsureLgpdConsent();
 
         usuarioRepository.Add(usuario);
 
         return JwtTokenIssuer.Create(usuario, configuration);
+    }
+
+    internal static Guid ResolvePerfilId(
+        IPerfilMobilidadeRepository perfilRepository,
+        string? codigoPerfil,
+        int anoNascimento)
+    {
+        var normalized = codigoPerfil?.Trim().ToUpperInvariant();
+        if (!string.IsNullOrWhiteSpace(normalized) &&
+            normalized != "STRING" &&
+            normalized != "PADRAO")
+        {
+            var matched = perfilRepository.GetByCodigo(normalized)
+                ?? throw new DomainException($"Perfil de mobilidade '{normalized}' informado nao existe.");
+            return matched.Id;
+        }
+
+        var age = DateTime.UtcNow.Year - anoNascimento;
+        var targetCode = age >= 60 ? "IDOSO" : "PADRAO";
+        var autoPerfil = perfilRepository.GetByCodigo(targetCode)
+            ?? perfilRepository.GetByCodigo("PADRAO")
+            ?? perfilRepository.GetAll().FirstOrDefault()
+            ?? throw new DomainException("Perfil de mobilidade padrao nao existe.");
+
+        return autoPerfil.Id;
     }
 }
