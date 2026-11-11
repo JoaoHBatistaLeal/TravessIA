@@ -33,6 +33,7 @@ public sealed class UsuarioService(
             throw new DomainException("Ja existe um usuario cadastrado com este e-mail.");
 
         var entity = request.ToDomain();
+        entity.EnsureLgpdConsent();
         usuarioRepository.Add(entity);
         return UsuarioResponse.FromDomain(entity);
     }
@@ -56,6 +57,8 @@ public sealed class UsuarioService(
             request.Role,
             request.AnoNascimento,
             request.ConsentimentoLgpd);
+
+        entity.EnsureLgpdConsent();
 
         if (!string.IsNullOrWhiteSpace(request.NovaSenha))
             entity.ChangePassword(request.NovaSenha);

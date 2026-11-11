@@ -78,10 +78,10 @@ public static class AcionamentoEndpoints
                         detail: $"Nenhum acionamento encontrado com id_acionamento = {id}.",
                         statusCode: StatusCodes.Status404NotFound);
             })
-            .RequireAuthorization("GestorOnly")
+            .RequireAuthorization("CidadaoOrGestor")
             .WithName("UpdateAcionamento")
-            .WithSummary("Recalcula e atualiza um registro de acionamento (exclusivo GESTOR)")
-            .WithDescription("Permite ao gestor atualizar parametros de um acionamento em TB_ACIONAMENTO recalculando o tempo extra e a justificativa de IA.")
+            .WithSummary("Recalcula e atualiza um registro de acionamento")
+            .WithDescription("Permite atualizar parametros de telemetria climatica e distancia de um acionamento em TB_ACIONAMENTO recalculando o tempo extra e a justificativa de IA.")
             .Accepts<AcionamentoRequest>("application/json")
             .Produces<AcionamentoResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest)

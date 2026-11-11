@@ -17,7 +17,7 @@ O **TravessIA** integra sensores fisicos de proximidade na calcada (Beacons BLE/
 
 ---
 
-## 2. Integrantes do Grupo (2TDSPJ - FIAP)
+## 2. Integrantes do Grupo (2TDSPG - FIAP)
 
 | Nome Completo | RM | E-mail Institucional |
 |---|---|---|
@@ -100,7 +100,7 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 5. **Rate Limiting com HTTP 429 (`ProblemDetails`)**:
    - Middleware `FixedWindowLimiter` configurado para retornar `HTTP 429 Too Many Requests` no padrao RFC 7807 `ProblemDetails` com cabecalho `Retry-After` quando a cota de requisicoes por janela e excedida.
 6. **Health Checks (`/health`)**:
-   - Endpoint `/health` inspecionando a conectividade com o banco de dados via `TravessIAContext` e retornando payload JSON estruturado.
+   - Endpoint `/health` monitorando as 3 dimensoes exigidas: `"api-self"` (disponibilidade do runtime da Minimal API), `"database"` (conectividade com o banco de dados via `TravessIAContext`) e `"external-weather-and-keyvault"` (motor de calculo meteorologico/IA e configuracao do provedor Azure Key Vault).
 7. **Suite de Testes Unitarios e de Integracao (`xUnit.net`)**:
    - Projeto `TravessIA.Tests` com 35 testes automatizados (`27` testes unitarios de dominio + `8` testes de integracao com `WebApplicationFactory<Program>`), validando calculo seco vs. molhado, trava de distancia 0.1m-5.0m, consentimento LGPD, CRUD completo, auditoria automatica, JWT `401`/`403`, replay de idempotencia, Rate Limiting `429` e `/health`.
 
@@ -384,6 +384,121 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
     "dtOperacao": "2026-11-11T18:58:16.8976937Z"
   }
 ]
+```
+
+---
+
+### 6.6. CRUD Tabela 4: `TB_USUARIO` (`/api/v1/usuarios`)
+
+#### 1) Cadastrar Cidadao - `POST /api/v1/auth/register`
+**Request Body:**
+```json
+{
+  "idPerfil": 2,
+  "nome": "Helena Souza Idosa",
+  "email": "helena.idosa@cidadao.sp.gov.br",
+  "senha": "Password123!",
+  "role": "CIDADAO",
+  "anoNascimento": 1948,
+  "consentimentoLgpd": "S"
+}
+```
+
+**Response (`201 Created`):**
+```json
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "expiresAtUtc": "2026-11-11T21:30:00Z",
+  "idUsuario": 4,
+  "nome": "Helena Souza Idosa",
+  "email": "helena.idosa@cidadao.sp.gov.br",
+  "role": "CIDADAO",
+  "idPerfil": 2
+}
+```
+
+#### 2) Consultar Usuario por ID - `GET /api/v1/usuarios/4` (Requer Bearer Token)
+**Response (`200 OK` - sem exposicao de `senha_hash`):**
+```json
+{
+  "idUsuario": 4,
+  "idPerfil": 2,
+  "codigoPerfil": "IDOSO",
+  "nome": "Helena Souza Idosa",
+  "email": "helena.idosa@cidadao.sp.gov.br",
+  "role": "CIDADAO",
+  "anoNascimento": 1948,
+  "consentimentoLgpd": "S",
+  "dtCadastro": "2026-11-11T19:30:00Z"
+}
+```
+
+#### 3) Atualizar Usuario - `PUT /api/v1/usuarios/4` (Requer Bearer Token)
+**Request Body:**
+```json
+{
+  "idPerfil": 3,
+  "nome": "Helena Souza Cadeirante",
+  "email": "helena.idosa@cidadao.sp.gov.br",
+  "role": "CIDADAO",
+  "anoNascimento": 1948,
+  "consentimentoLgpd": "S"
+}
+```
+
+**Response (`200 OK`):**
+```json
+{
+  "idUsuario": 4,
+  "idPerfil": 3,
+  "codigoPerfil": "CADEIRANTE",
+  "nome": "Helena Souza Cadeirante",
+  "email": "helena.idosa@cidadao.sp.gov.br",
+  "role": "CIDADAO",
+  "anoNascimento": 1948,
+  "consentimentoLgpd": "S",
+  "dtCadastro": "2026-11-11T19:30:00Z"
+}
+```
+
+#### 4) Remover Usuario - `DELETE /api/v1/usuarios/4` (Requer Bearer Token `GESTOR`)
+**Response:** `204 No Content`
+
+---
+
+### 6.7. Monitoramento de Saude (`GET /health`)
+
+#### Consultar Saude da API, Banco de Dados e Servicos Externos - `GET /health`
+**Response (`200 OK`):**
+```json
+{
+  "status": "Healthy",
+  "totalDurationMs": 14.25,
+  "timestampUtc": "2026-11-11T19:30:00Z",
+  "entries": [
+    {
+      "name": "api-self",
+      "status": "Healthy",
+      "description": "TravessIA Minimal API runtime is responsive.",
+      "durationMs": 0.42,
+      "error": null
+    },
+    {
+      "name": "database",
+      "status": "Healthy",
+      "description": null,
+      "durationMs": 12.81,
+      "error": null
+    },
+    {
+      "name": "external-weather-and-keyvault",
+      "status": "Healthy",
+      "description": "Weather/AI calculation provider and Key Vault configuration provider are operational.",
+      "durationMs": 0.85,
+      "error": null
+    }
+  ]
+}
 ```
 
 ---

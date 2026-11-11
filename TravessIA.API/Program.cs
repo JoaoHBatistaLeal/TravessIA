@@ -6,6 +6,7 @@ using Azure.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.SwaggerUI;
 using TravessIA.API.Endpoints;
@@ -138,7 +139,11 @@ public partial class Program
 
         builder.Services
             .AddHealthChecks()
-            .AddDbContextCheck<TravessIAContext>("database");
+            .AddCheck(
+                "api-self",
+                () => HealthCheckResult.Healthy("TravessIA Minimal API runtime operacional e responsivo."))
+            .AddDbContextCheck<TravessIAContext>("database")
+            .AddCheck<ExternalWeatherAndKeyVaultHealthCheck>("external-weather-and-keyvault");
 
         builder.Services.AddTravessIASwagger();
         builder.Services.AddCors(options =>

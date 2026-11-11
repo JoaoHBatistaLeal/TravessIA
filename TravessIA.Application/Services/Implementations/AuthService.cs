@@ -42,6 +42,8 @@ public sealed class AuthService(
             request.AnoNascimento,
             request.ConsentimentoLgpd);
 
+        usuario.EnsureLgpdConsent();
+
         usuarioRepository.Add(usuario);
 
         return JwtTokenIssuer.Create(usuario, configuration);
