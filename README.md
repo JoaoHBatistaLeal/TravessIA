@@ -473,28 +473,28 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 ```json
 {
   "status": "Healthy",
-  "totalDurationMs": 14.25,
-  "timestampUtc": "2026-11-11T19:30:00Z",
-  "entries": [
+  "service": "TravessIA.API",
+  "duration": "00:00:00.0036382",
+  "checks": [
     {
       "name": "api-self",
       "status": "Healthy",
-      "description": "TravessIA Minimal API runtime is responsive.",
-      "durationMs": 0.42,
+      "description": "TravessIA Minimal API runtime operacional e responsivo.",
+      "duration": "00:00:00.0000057",
       "error": null
     },
     {
       "name": "database",
       "status": "Healthy",
       "description": null,
-      "durationMs": 12.81,
+      "duration": "00:00:00.0033253",
       "error": null
     },
     {
       "name": "external-weather-and-keyvault",
       "status": "Healthy",
-      "description": "Weather/AI calculation provider and Key Vault configuration provider are operational.",
-      "durationMs": 0.85,
+      "description": "Motor de telemetria climatica/IA operacional e Azure Key Vault conectado (https://kv-travessia-564361.vault.azure.net/).",
+      "duration": "00:00:00.0000278",
       "error": null
     }
   ]
