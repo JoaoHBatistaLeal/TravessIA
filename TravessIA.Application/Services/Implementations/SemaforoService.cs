@@ -14,7 +14,7 @@ public sealed class SemaforoService(
     public IReadOnlyList<SemaforoResponse> GetAll() =>
         semaforoRepository.GetAll().Select(SemaforoResponse.FromDomain).ToList();
 
-    public SemaforoResponse? GetById(int id)
+    public SemaforoResponse? GetById(Guid id)
     {
         var entity = semaforoRepository.GetById(id);
         return entity is null ? null : SemaforoResponse.FromDomain(entity);
@@ -41,7 +41,7 @@ public sealed class SemaforoService(
         return SemaforoResponse.FromDomain(entity);
     }
 
-    public SemaforoResponse? Update(int id, SemaforoUpdateRequest request, string? usuarioBd = null)
+    public SemaforoResponse? Update(Guid id, SemaforoUpdateRequest request, string? usuarioBd = null)
     {
         var entity = semaforoRepository.GetById(id);
         if (entity is null)
@@ -94,7 +94,7 @@ public sealed class SemaforoService(
         return SemaforoResponse.FromDomain(entity);
     }
 
-    public bool Delete(int id, string? usuarioBd = null)
+    public bool Delete(Guid id, string? usuarioBd = null)
     {
         var entity = semaforoRepository.GetById(id);
         if (entity is null)

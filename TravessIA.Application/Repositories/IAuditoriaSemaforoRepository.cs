@@ -5,8 +5,8 @@ namespace TravessIA.Application.Repositories;
 public interface IAuditoriaSemaforoRepository
 {
     IReadOnlyList<AuditoriaSemaforo> GetAll();
-    AuditoriaSemaforo? GetById(int id);
-    IReadOnlyList<AuditoriaSemaforo> GetBySemaforoId(int idSemaforo);
+    AuditoriaSemaforo? GetById(Guid id);
+    IReadOnlyList<AuditoriaSemaforo> GetBySemaforoId(Guid idSemaforo);
     AuditoriaSemaforo Add(AuditoriaSemaforo entity);
     void AddRange(IEnumerable<AuditoriaSemaforo> entities);
 }

@@ -5,7 +5,7 @@ namespace TravessIA.Application.DTOs.Usuarios;
 [Description("Payload para atualizacao cadastral de usuario em TB_USUARIO.")]
 public sealed record UsuarioUpdateRequest(
     [property: Description("Chave estrangeira do perfil de mobilidade (id_perfil).")]
-    int IdPerfil,
+    Guid IdPerfil,
 
     [property: Description("Nome completo do usuario (maximo 120 caracteres).")]
     string Nome,

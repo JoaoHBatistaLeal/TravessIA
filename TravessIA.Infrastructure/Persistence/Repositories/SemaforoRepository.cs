@@ -12,7 +12,7 @@ public sealed class SemaforoRepository(TravessIAContext context) : ISemaforoRepo
             .OrderBy(s => s.Id)
             .ToList();
 
-    public Semaforo? GetById(int id) =>
+    public Semaforo? GetById(Guid id) =>
         context.Semaforos.Find(id);
 
     public Semaforo? GetByCodigoBeacon(string codigoBeacon)
@@ -25,10 +25,10 @@ public sealed class SemaforoRepository(TravessIAContext context) : ISemaforoRepo
             .FirstOrDefault(s => s.CodigoBeacon.ToUpper() == normalized);
     }
 
-    public bool ExistsById(int id) =>
+    public bool ExistsById(Guid id) =>
         context.Semaforos.Any(s => s.Id == id);
 
-    public bool ExistsByCodigoBeacon(string codigoBeacon, int? excludeId = null)
+    public bool ExistsByCodigoBeacon(string codigoBeacon, Guid? excludeId = null)
     {
         if (string.IsNullOrWhiteSpace(codigoBeacon))
             return false;
@@ -52,7 +52,7 @@ public sealed class SemaforoRepository(TravessIAContext context) : ISemaforoRepo
         return entity;
     }
 
-    public bool Delete(int id)
+    public bool Delete(Guid id)
     {
         var entity = context.Semaforos.Find(id);
         if (entity is null)

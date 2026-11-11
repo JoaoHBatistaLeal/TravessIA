@@ -1,7 +1,7 @@
 IF OBJECT_ID('dbo.TB_PERFIL_MOBILIDADE', 'U') IS NULL
 BEGIN
     CREATE TABLE dbo.TB_PERFIL_MOBILIDADE (
-        id_perfil INT IDENTITY(1,1) NOT NULL,
+        id_perfil UNIQUEIDENTIFIER NOT NULL CONSTRAINT DF_TB_PERFIL_MOBILIDADE_ID DEFAULT NEWID(),
         codigo VARCHAR(30) NOT NULL,
         descricao VARCHAR(150) NOT NULL,
         seg_extra_seco INT NOT NULL,
@@ -14,8 +14,8 @@ END;
 IF OBJECT_ID('dbo.TB_USUARIO', 'U') IS NULL
 BEGIN
     CREATE TABLE dbo.TB_USUARIO (
-        id_usuario INT IDENTITY(1,1) NOT NULL,
-        id_perfil INT NOT NULL,
+        id_usuario UNIQUEIDENTIFIER NOT NULL CONSTRAINT DF_TB_USUARIO_ID DEFAULT NEWID(),
+        id_perfil UNIQUEIDENTIFIER NOT NULL,
         nome VARCHAR(120) NOT NULL,
         email VARCHAR(150) NOT NULL,
         senha_hash VARCHAR(255) NOT NULL,
@@ -32,7 +32,7 @@ END;
 IF OBJECT_ID('dbo.TB_SEMAFORO', 'U') IS NULL
 BEGIN
     CREATE TABLE dbo.TB_SEMAFORO (
-        id_semaforo INT IDENTITY(1,1) NOT NULL,
+        id_semaforo UNIQUEIDENTIFIER NOT NULL CONSTRAINT DF_TB_SEMAFORO_ID DEFAULT NEWID(),
         codigo_beacon VARCHAR(50) NOT NULL,
         endereco VARCHAR(200) NOT NULL,
         latitude DECIMAL(10,7) NOT NULL,
@@ -48,9 +48,9 @@ END;
 IF OBJECT_ID('dbo.TB_ACIONAMENTO', 'U') IS NULL
 BEGIN
     CREATE TABLE dbo.TB_ACIONAMENTO (
-        id_acionamento INT IDENTITY(1,1) NOT NULL,
-        id_usuario INT NOT NULL,
-        id_semaforo INT NOT NULL,
+        id_acionamento UNIQUEIDENTIFIER NOT NULL CONSTRAINT DF_TB_ACIONAMENTO_ID DEFAULT NEWID(),
+        id_usuario UNIQUEIDENTIFIER NOT NULL,
+        id_semaforo UNIQUEIDENTIFIER NOT NULL,
         chave_idempotencia VARCHAR(100) NOT NULL,
         dt_hora DATETIME2 NOT NULL,
         distancia_sensor_m DECIMAL(5,2) NOT NULL,
@@ -68,8 +68,8 @@ END;
 IF OBJECT_ID('dbo.TB_AUDITORIA_SEMAFORO', 'U') IS NULL
 BEGIN
     CREATE TABLE dbo.TB_AUDITORIA_SEMAFORO (
-        id_auditoria INT IDENTITY(1,1) NOT NULL,
-        id_semaforo INT NOT NULL,
+        id_auditoria UNIQUEIDENTIFIER NOT NULL CONSTRAINT DF_TB_AUDITORIA_SEMAFORO_ID DEFAULT NEWID(),
+        id_semaforo UNIQUEIDENTIFIER NOT NULL,
         operacao VARCHAR(20) NOT NULL,
         campo_alterado VARCHAR(60) NOT NULL,
         valor_antigo VARCHAR(255) NULL,
@@ -100,50 +100,50 @@ BEGIN
     CREATE INDEX IX_TB_AUDITORIA_SEMAFORO_ID_SEMAFORO ON dbo.TB_AUDITORIA_SEMAFORO(id_semaforo);
 END;
 
-IF NOT EXISTS (SELECT 1 FROM dbo.TB_PERFIL_MOBILIDADE WHERE codigo = 'PADRAO')
+IF NOT EXISTS (SELECT 1 FROM dbo.TB_PERFIL_MOBILIDADE WHERE id_perfil = '11111111-1111-1111-1111-111111111101')
 BEGIN
-    INSERT INTO dbo.TB_PERFIL_MOBILIDADE (codigo, descricao, seg_extra_seco, seg_extra_chuva)
-    VALUES ('PADRAO', 'Cidadao adulto sem restricoes de mobilidade', 0, 4);
+    INSERT INTO dbo.TB_PERFIL_MOBILIDADE (id_perfil, codigo, descricao, seg_extra_seco, seg_extra_chuva)
+    VALUES ('11111111-1111-1111-1111-111111111101', 'PADRAO', 'Cidadao adulto sem restricoes de mobilidade', 0, 4);
 END;
 
-IF NOT EXISTS (SELECT 1 FROM dbo.TB_PERFIL_MOBILIDADE WHERE codigo = 'IDOSO')
+IF NOT EXISTS (SELECT 1 FROM dbo.TB_PERFIL_MOBILIDADE WHERE id_perfil = '11111111-1111-1111-1111-111111111102')
 BEGIN
-    INSERT INTO dbo.TB_PERFIL_MOBILIDADE (codigo, descricao, seg_extra_seco, seg_extra_chuva)
-    VALUES ('IDOSO', 'Pessoa idosa acima de 60 anos com marcha reduzida', 6, 12);
+    INSERT INTO dbo.TB_PERFIL_MOBILIDADE (id_perfil, codigo, descricao, seg_extra_seco, seg_extra_chuva)
+    VALUES ('11111111-1111-1111-1111-111111111102', 'IDOSO', 'Pessoa idosa acima de 60 anos com marcha reduzida', 6, 12);
 END;
 
-IF NOT EXISTS (SELECT 1 FROM dbo.TB_PERFIL_MOBILIDADE WHERE codigo = 'CADEIRANTE')
+IF NOT EXISTS (SELECT 1 FROM dbo.TB_PERFIL_MOBILIDADE WHERE id_perfil = '11111111-1111-1111-1111-111111111103')
 BEGIN
-    INSERT INTO dbo.TB_PERFIL_MOBILIDADE (codigo, descricao, seg_extra_seco, seg_extra_chuva)
-    VALUES ('CADEIRANTE', 'Usuario de cadeira de rodas manual ou motorizada', 8, 15);
+    INSERT INTO dbo.TB_PERFIL_MOBILIDADE (id_perfil, codigo, descricao, seg_extra_seco, seg_extra_chuva)
+    VALUES ('11111111-1111-1111-1111-111111111103', 'CADEIRANTE', 'Usuario de cadeira de rodas manual ou motorizada', 8, 15);
 END;
 
-IF NOT EXISTS (SELECT 1 FROM dbo.TB_PERFIL_MOBILIDADE WHERE codigo = 'DEFICIENCIA_VISUAL')
+IF NOT EXISTS (SELECT 1 FROM dbo.TB_PERFIL_MOBILIDADE WHERE id_perfil = '11111111-1111-1111-1111-111111111104')
 BEGIN
-    INSERT INTO dbo.TB_PERFIL_MOBILIDADE (codigo, descricao, seg_extra_seco, seg_extra_chuva)
-    VALUES ('DEFICIENCIA_VISUAL', 'Pessoa cega ou com baixa visao guiada por sinal sonoro', 7, 14);
+    INSERT INTO dbo.TB_PERFIL_MOBILIDADE (id_perfil, codigo, descricao, seg_extra_seco, seg_extra_chuva)
+    VALUES ('11111111-1111-1111-1111-111111111104', 'DEFICIENCIA_VISUAL', 'Pessoa cega ou com baixa visao guiada por sinal sonoro', 7, 14);
 END;
 
-IF NOT EXISTS (SELECT 1 FROM dbo.TB_PERFIL_MOBILIDADE WHERE codigo = 'MOBILIDADE_REDUZIDA')
+IF NOT EXISTS (SELECT 1 FROM dbo.TB_PERFIL_MOBILIDADE WHERE id_perfil = '11111111-1111-1111-1111-111111111105')
 BEGIN
-    INSERT INTO dbo.TB_PERFIL_MOBILIDADE (codigo, descricao, seg_extra_seco, seg_extra_chuva)
-    VALUES ('MOBILIDADE_REDUZIDA', 'Gestante, pessoa com muletas ou mobilidade temporariamente reduzida', 5, 10);
+    INSERT INTO dbo.TB_PERFIL_MOBILIDADE (id_perfil, codigo, descricao, seg_extra_seco, seg_extra_chuva)
+    VALUES ('11111111-1111-1111-1111-111111111105', 'MOBILIDADE_REDUZIDA', 'Gestante, pessoa com muletas ou mobilidade temporariamente reduzida', 5, 10);
 END;
 
-IF NOT EXISTS (SELECT 1 FROM dbo.TB_SEMAFORO WHERE codigo_beacon = 'BEACON-PAULISTA-1106')
+IF NOT EXISTS (SELECT 1 FROM dbo.TB_SEMAFORO WHERE id_semaforo = '22222222-2222-2222-2222-222222222201')
 BEGIN
-    INSERT INTO dbo.TB_SEMAFORO (codigo_beacon, endereco, latitude, longitude, largura_via_m, tempo_base_seg, status_operacional)
-    VALUES ('BEACON-PAULISTA-1106', 'Av. Paulista, 1106 - Bela Vista, Sao Paulo - SP', -23.5641090, -46.6524090, 18.50, 15, 'ATIVO');
+    INSERT INTO dbo.TB_SEMAFORO (id_semaforo, codigo_beacon, endereco, latitude, longitude, largura_via_m, tempo_base_seg, status_operacional)
+    VALUES ('22222222-2222-2222-2222-222222222201', 'BEACON-SP-001', 'Av. Paulista, 1106 - Bela Vista, Sao Paulo - SP', -23.5641090, -46.6524090, 18.50, 15, 'ATIVO');
 END;
 
-IF NOT EXISTS (SELECT 1 FROM dbo.TB_SEMAFORO WHERE codigo_beacon = 'BEACON-FARIA-LIMA-2000')
+IF NOT EXISTS (SELECT 1 FROM dbo.TB_SEMAFORO WHERE id_semaforo = '22222222-2222-2222-2222-222222222202')
 BEGIN
-    INSERT INTO dbo.TB_SEMAFORO (codigo_beacon, endereco, latitude, longitude, largura_via_m, tempo_base_seg, status_operacional)
-    VALUES ('BEACON-FARIA-LIMA-2000', 'Av. Brig. Faria Lima, 2000 - Pinheiros, Sao Paulo - SP', -23.5746120, -46.6891450, 22.00, 18, 'ATIVO');
+    INSERT INTO dbo.TB_SEMAFORO (id_semaforo, codigo_beacon, endereco, latitude, longitude, largura_via_m, tempo_base_seg, status_operacional)
+    VALUES ('22222222-2222-2222-2222-222222222202', 'BEACON-SP-002', 'Av. Brig. Faria Lima, 2000 - Pinheiros, Sao Paulo - SP', -23.5746120, -46.6891450, 22.00, 18, 'ATIVO');
 END;
 
-IF NOT EXISTS (SELECT 1 FROM dbo.TB_SEMAFORO WHERE codigo_beacon = 'BEACON-CONSOLACAO-800')
+IF NOT EXISTS (SELECT 1 FROM dbo.TB_SEMAFORO WHERE id_semaforo = '22222222-2222-2222-2222-222222222203')
 BEGIN
-    INSERT INTO dbo.TB_SEMAFORO (codigo_beacon, endereco, latitude, longitude, largura_via_m, tempo_base_seg, status_operacional)
-    VALUES ('BEACON-CONSOLACAO-800', 'Rua da Consolacao, 800 - Consolacao, Sao Paulo - SP', -23.5489210, -46.6501120, 16.00, 14, 'MODO_CHUVA');
+    INSERT INTO dbo.TB_SEMAFORO (id_semaforo, codigo_beacon, endereco, latitude, longitude, largura_via_m, tempo_base_seg, status_operacional)
+    VALUES ('22222222-2222-2222-2222-222222222203', 'BEACON-SP-003', 'Rua da Consolacao, 800 - Consolacao, Sao Paulo - SP', -23.5489210, -46.6501120, 16.00, 14, 'MODO_CHUVA');
 END;

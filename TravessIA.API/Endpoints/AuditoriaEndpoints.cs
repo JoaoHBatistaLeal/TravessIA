@@ -21,7 +21,7 @@ public static class AuditoriaEndpoints
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
-        group.MapGet("/{id:int}", (int id, IAuditoriaSemaforoService service) =>
+        group.MapGet("/{id:guid}", (Guid id, IAuditoriaSemaforoService service) =>
             {
                 var response = service.GetById(id);
                 return response is not null
@@ -41,7 +41,7 @@ public static class AuditoriaEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
-        group.MapGet("/semaforo/{idSemaforo:int}", (int idSemaforo, IAuditoriaSemaforoService service) =>
+        group.MapGet("/semaforo/{idSemaforo:guid}", (Guid idSemaforo, IAuditoriaSemaforoService service) =>
                 Results.Ok(service.GetBySemaforoId(idSemaforo)))
             .RequireAuthorization("GestorOnly")
             .WithName("GetAuditoriasBySemaforoId")

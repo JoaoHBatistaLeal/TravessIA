@@ -9,7 +9,7 @@ public class CrosswalkDomainTests
     private static string CreateEphemeralTestInput() => $"TestInput_{Guid.NewGuid():N}";
 
     private static Usuario CreateValidUsuario(string consentimentoLgpd = "S", string role = Usuario.RoleCidadao) =>
-        new(1, "Cidadao Teste", "cidadao.teste@sp.gov.br", CreateEphemeralTestInput(), role, 1955, consentimentoLgpd);
+        new(Guid.Parse("11111111-1111-1111-1111-111111111102"), "Cidadao Teste", "cidadao.teste@sp.gov.br", CreateEphemeralTestInput(), role, 1955, consentimentoLgpd);
 
     private static Semaforo CreateValidSemaforo(decimal larguraViaM = 18.0m, int tempoBaseSeg = 15, string status = Semaforo.StatusAtivo) =>
         new("BEACON-TESTE-01", "Av. Paulista, 1000", -23.5641090m, -46.6524090m, larguraViaM, tempoBaseSeg, status);
@@ -192,15 +192,16 @@ public class CrosswalkDomainTests
         Assert.Throws<DomainException>(() =>
             CreateValidSemaforo(18.0m, 15, "STATUS_INVALIDO"));
 
+        var semaforoId = Guid.NewGuid();
         var audit = new AuditoriaSemaforo(
-            10,
+            semaforoId,
             AuditoriaSemaforo.OperacaoUpdate,
             "status_operacional",
             Semaforo.StatusAtivo,
             Semaforo.StatusModoChuva,
             "gestor@travessia.sp.gov.br");
 
-        Assert.Equal(10, audit.IdSemaforo);
+        Assert.Equal(semaforoId, audit.IdSemaforo);
         Assert.Equal(AuditoriaSemaforo.OperacaoUpdate, audit.Operacao);
         Assert.Equal("status_operacional", audit.CampoAlterado);
         Assert.Equal(Semaforo.StatusAtivo, audit.ValorAntigo);
@@ -208,7 +209,7 @@ public class CrosswalkDomainTests
         Assert.Equal("gestor@travessia.sp.gov.br", audit.UsuarioBd);
 
         Assert.Throws<DomainException>(() =>
-            new AuditoriaSemaforo(10, "TRUNCATE", "status_operacional", null, null, "gestor"));
+            new AuditoriaSemaforo(semaforoId, "TRUNCATE", "status_operacional", null, null, "gestor"));
     }
 
     [Fact]

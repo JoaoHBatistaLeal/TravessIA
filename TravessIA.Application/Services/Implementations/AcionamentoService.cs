@@ -15,7 +15,7 @@ public sealed class AcionamentoService(
     public IReadOnlyList<AcionamentoResponse> GetAll() =>
         acionamentoRepository.GetAll().Select(a => AcionamentoResponse.FromDomain(a)).ToList();
 
-    public AcionamentoResponse? GetById(int id)
+    public AcionamentoResponse? GetById(Guid id)
     {
         var entity = acionamentoRepository.GetById(id);
         return entity is null ? null : AcionamentoResponse.FromDomain(entity);
@@ -63,7 +63,7 @@ public sealed class AcionamentoService(
         return (AcionamentoResponse.FromDomain(acionamento, semaforo.TempoBaseSeg), false);
     }
 
-    public AcionamentoResponse? Update(int id, AcionamentoRequest request)
+    public AcionamentoResponse? Update(Guid id, AcionamentoRequest request)
     {
         var entity = acionamentoRepository.GetById(id);
         if (entity is null)
@@ -101,5 +101,5 @@ public sealed class AcionamentoService(
         return AcionamentoResponse.FromDomain(entity, semaforo.TempoBaseSeg);
     }
 
-    public bool Delete(int id) => acionamentoRepository.Delete(id);
+    public bool Delete(Guid id) => acionamentoRepository.Delete(id);
 }

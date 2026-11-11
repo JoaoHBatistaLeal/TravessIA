@@ -14,7 +14,7 @@ public sealed class AuditoriaSemaforoConfiguration : IEntityTypeConfiguration<Au
 
         builder.Property(a => a.Id)
             .HasColumnName("id_auditoria")
-            .ValueGeneratedOnAdd();
+            .ValueGeneratedNever();
 
         builder.Property(a => a.IdSemaforo)
             .HasColumnName("id_semaforo")

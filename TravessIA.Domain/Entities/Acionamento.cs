@@ -19,11 +19,11 @@ public class Acionamento
         ClimaTempestade
     ];
 
-    public int Id { get; private set; }
+    public Guid Id { get; private set; }
 
-    public int IdUsuario { get; private set; }
+    public Guid IdUsuario { get; private set; }
 
-    public int IdSemaforo { get; private set; }
+    public Guid IdSemaforo { get; private set; }
 
     public string ChaveIdempotencia { get; private set; } = string.Empty;
 
@@ -54,8 +54,10 @@ public class Acionamento
         string chaveIdempotencia,
         decimal distanciaSensorM,
         string condicaoClima,
-        decimal intensidadeChuvaMm)
+        decimal intensidadeChuvaMm,
+        Guid? id = null)
     {
+        Id = id.HasValue && id.Value != Guid.Empty ? id.Value : Guid.NewGuid();
         AplicarRegrasDeTravessia(
             usuario,
             perfil,
@@ -74,7 +76,8 @@ public class Acionamento
         string chaveIdempotencia,
         decimal distanciaSensorM,
         string condicaoClima,
-        decimal intensidadeChuvaMm)
+        decimal intensidadeChuvaMm,
+        Guid? id = null)
     {
         return new Acionamento(
             usuario,
@@ -83,7 +86,8 @@ public class Acionamento
             chaveIdempotencia,
             distanciaSensorM,
             condicaoClima,
-            intensidadeChuvaMm);
+            intensidadeChuvaMm,
+            id);
     }
 
     public void Update(

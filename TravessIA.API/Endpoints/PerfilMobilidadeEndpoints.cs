@@ -19,7 +19,7 @@ public static class PerfilMobilidadeEndpoints
             .Produces<IReadOnlyList<PerfilMobilidadeResponse>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
-        group.MapGet("/{id:int}", (int id, IPerfilMobilidadeService service) =>
+        group.MapGet("/{id:guid}", (Guid id, IPerfilMobilidadeService service) =>
             {
                 var response = service.GetById(id);
                 return response is not null
@@ -53,7 +53,7 @@ public static class PerfilMobilidadeEndpoints
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
-        group.MapPut("/{id:int}", (int id, PerfilMobilidadeRequest request, IPerfilMobilidadeService service) =>
+        group.MapPut("/{id:guid}", (Guid id, PerfilMobilidadeRequest request, IPerfilMobilidadeService service) =>
             {
                 var updated = service.Update(id, request);
                 return updated is not null
@@ -75,7 +75,7 @@ public static class PerfilMobilidadeEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
-        group.MapDelete("/{id:int}", (int id, IPerfilMobilidadeService service) =>
+        group.MapDelete("/{id:guid}", (Guid id, IPerfilMobilidadeService service) =>
             {
                 var deleted = service.Delete(id);
                 return deleted

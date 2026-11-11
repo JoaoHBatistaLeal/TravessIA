@@ -6,10 +6,10 @@ namespace TravessIA.Application.DTOs.Usuarios;
 [Description("Representacao de um usuario cadastrado em TB_USUARIO.")]
 public sealed record UsuarioResponse(
     [property: Description("Identificador unico do usuario (id_usuario).")]
-    int IdUsuario,
+    Guid IdUsuario,
 
     [property: Description("Identificador do perfil de mobilidade (id_perfil).")]
-    int IdPerfil,
+    Guid IdPerfil,
 
     [property: Description("Codigo do perfil de mobilidade quando carregado.")]
     string? CodigoPerfil,

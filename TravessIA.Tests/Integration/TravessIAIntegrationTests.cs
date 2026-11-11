@@ -15,6 +15,7 @@ using TravessIA.Application.DTOs.PerfisMobilidade;
 using TravessIA.Application.DTOs.Semaforos;
 using TravessIA.Application.DTOs.Usuarios;
 using TravessIA.Domain.Entities;
+using TravessIA.Infrastructure.Persistence;
 using Xunit;
 
 namespace TravessIA.Tests.Integration;
@@ -68,12 +69,12 @@ public class TravessIAIntegrationTests
     private static async Task<AuthResponse> RegisterAndAuthenticateAsync(
         HttpClient client,
         string role,
-        int idPerfil = 2,
+        Guid? idPerfil = null,
         string consentimentoLgpd = "S")
     {
         var uniqueId = Guid.NewGuid().ToString("N")[..10];
         var registerRequest = new RegisterRequest(
-            idPerfil,
+            idPerfil ?? TravessIASeeder.PerfilIdosoId,
             $"Usuario {role} {uniqueId}",
             $"{role.ToLowerInvariant()}.{uniqueId}@travessia.sp.gov.br",
             GenerateRuntimeAccessPhrase(),
@@ -126,6 +127,7 @@ public class TravessIAIntegrationTests
 
         var swaggerJson = await jsonResponse.Content.ReadAsStringAsync();
         Assert.Contains("TravessIA CitizenTech API", swaggerJson);
+        Assert.Contains("\"format\": \"uuid\"", swaggerJson);
 
         var uiResponse = await client.GetAsync("/swagger/index.html");
         Assert.Equal(HttpStatusCode.OK, uiResponse.StatusCode);
@@ -143,7 +145,7 @@ public class TravessIAIntegrationTests
         var rawAccess = GenerateRuntimeAccessPhrase();
         var email = $"cidadao.auth.{Guid.NewGuid():N}@sp.gov.br";
         var registerReq = new RegisterRequest(
-            2,
+            TravessIASeeder.PerfilIdosoId,
             "Maria Cidada Prioritaria",
             email,
             rawAccess,
@@ -407,13 +409,13 @@ public class TravessIAIntegrationTests
         await using var factory = new TravessIAWebFactory();
         using var client = factory.CreateClient();
 
-        var cidadaoAuth = await RegisterAndAuthenticateAsync(client, Usuario.RoleCidadao, idPerfil: 2);
+        var cidadaoAuth = await RegisterAndAuthenticateAsync(client, Usuario.RoleCidadao, idPerfil: TravessIASeeder.PerfilIdosoId);
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", cidadaoAuth.AccessToken);
 
         var payload = new AcionamentoRequest(
             cidadaoAuth.IdUsuario,
-            1,
+            TravessIASeeder.SemaforoSp001Id,
             2.2m,
             Acionamento.ClimaChuvaModerada,
             18.0m);
@@ -452,7 +454,7 @@ public class TravessIAIntegrationTests
         outOfRangeMsg.Headers.Add("Idempotency-Key", $"idem-far-{Guid.NewGuid():N}");
         outOfRangeMsg.Content = JsonContent.Create(new AcionamentoRequest(
             cidadaoAuth.IdUsuario,
-            1,
+            TravessIASeeder.SemaforoSp001Id,
             8.5m,
             Acionamento.ClimaSeco,
             0m));

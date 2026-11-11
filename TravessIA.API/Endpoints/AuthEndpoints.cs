@@ -8,7 +8,7 @@ namespace TravessIA.API.Endpoints;
 [Description("Dados do usuario autenticado extraidos dos claims do token JWT.")]
 public sealed record AuthenticatedUserResponse(
     [property: Description("Identificador do usuario (sub / NameIdentifier).")]
-    string? IdUsuario,
+    Guid? IdUsuario,
     [property: Description("Nome do usuario autenticado.")]
     string? Nome,
     [property: Description("E-mail do usuario autenticado.")]
@@ -62,8 +62,9 @@ public static class AuthEndpoints
 
         group.MapGet("/me", (ClaimsPrincipal user) =>
             {
-                var id = user.FindFirst("sub")?.Value
+                var idRaw = user.FindFirst("sub")?.Value
                     ?? user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var parsedId = Guid.TryParse(idRaw, out var guidId) ? guidId : (Guid?)null;
                 var nome = user.FindFirst("name")?.Value
                     ?? user.FindFirst(ClaimTypes.Name)?.Value;
                 var email = user.FindFirst("email")?.Value
@@ -71,7 +72,7 @@ public static class AuthEndpoints
                 var role = user.FindFirst("role")?.Value
                     ?? user.FindFirst(ClaimTypes.Role)?.Value;
 
-                return Results.Ok(new AuthenticatedUserResponse(id, nome, email, role));
+                return Results.Ok(new AuthenticatedUserResponse(parsedId, nome, email, role));
             })
             .RequireAuthorization()
             .WithName("AuthMe")

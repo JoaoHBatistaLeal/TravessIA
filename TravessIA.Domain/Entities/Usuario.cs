@@ -9,9 +9,9 @@ public class Usuario
     public const string RoleGestor = "GESTOR";
     private const int MinimumPasswordLength = 8;
 
-    public int Id { get; private set; }
+    public Guid Id { get; private set; }
 
-    public int IdPerfil { get; private set; }
+    public Guid IdPerfil { get; private set; }
 
     public string Nome { get; private set; } = string.Empty;
 
@@ -36,28 +36,30 @@ public class Usuario
     }
 
     public Usuario(
-        int idPerfil,
+        Guid idPerfil,
         string nome,
         string email,
         string rawPassword,
         string role,
         int anoNascimento,
-        string consentimentoLgpd)
+        string consentimentoLgpd,
+        Guid? id = null)
     {
+        Id = id.HasValue && id.Value != Guid.Empty ? id.Value : Guid.NewGuid();
         Update(idPerfil, nome, email, role, anoNascimento, consentimentoLgpd);
         ChangePassword(rawPassword);
         DtCadastro = DateTime.UtcNow;
     }
 
     public void Update(
-        int idPerfil,
+        Guid idPerfil,
         string nome,
         string email,
         string role,
         int anoNascimento,
         string consentimentoLgpd)
     {
-        if (idPerfil <= 0)
+        if (idPerfil == Guid.Empty)
             throw new DomainException("Perfil de mobilidade invalido.");
 
         if (string.IsNullOrWhiteSpace(nome))

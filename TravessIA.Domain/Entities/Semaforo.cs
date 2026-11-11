@@ -15,7 +15,7 @@ public class Semaforo
         StatusModoChuva
     ];
 
-    public int Id { get; private set; }
+    public Guid Id { get; private set; }
 
     public string CodigoBeacon { get; private set; } = string.Empty;
 
@@ -44,8 +44,10 @@ public class Semaforo
         decimal longitude,
         decimal larguraViaM,
         int tempoBaseSeg,
-        string statusOperacional)
+        string statusOperacional,
+        Guid? id = null)
     {
+        Id = id.HasValue && id.Value != Guid.Empty ? id.Value : Guid.NewGuid();
         Update(codigoBeacon, endereco, latitude, longitude, larguraViaM, tempoBaseSeg, statusOperacional);
     }
 

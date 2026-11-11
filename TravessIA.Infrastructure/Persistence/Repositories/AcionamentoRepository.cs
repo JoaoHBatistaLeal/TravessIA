@@ -14,7 +14,7 @@ public sealed class AcionamentoRepository(TravessIAContext context) : IAcionamen
             .OrderByDescending(a => a.DtHora)
             .ToList();
 
-    public Acionamento? GetById(int id) =>
+    public Acionamento? GetById(Guid id) =>
         context.Acionamentos
             .Include(a => a.Semaforo)
             .Include(a => a.Usuario)
@@ -32,7 +32,7 @@ public sealed class AcionamentoRepository(TravessIAContext context) : IAcionamen
             .FirstOrDefault(a => a.ChaveIdempotencia == normalized);
     }
 
-    public IReadOnlyList<Acionamento> GetByUsuarioId(int idUsuario) =>
+    public IReadOnlyList<Acionamento> GetByUsuarioId(Guid idUsuario) =>
         context.Acionamentos
             .Include(a => a.Semaforo)
             .AsNoTracking()
@@ -40,7 +40,7 @@ public sealed class AcionamentoRepository(TravessIAContext context) : IAcionamen
             .OrderByDescending(a => a.DtHora)
             .ToList();
 
-    public IReadOnlyList<Acionamento> GetBySemaforoId(int idSemaforo) =>
+    public IReadOnlyList<Acionamento> GetBySemaforoId(Guid idSemaforo) =>
         context.Acionamentos
             .Include(a => a.Usuario)
             .AsNoTracking()
@@ -62,7 +62,7 @@ public sealed class AcionamentoRepository(TravessIAContext context) : IAcionamen
         return entity;
     }
 
-    public bool Delete(int id)
+    public bool Delete(Guid id)
     {
         var entity = context.Acionamentos.Find(id);
         if (entity is null)
