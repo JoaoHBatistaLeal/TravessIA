@@ -1,0 +1,102 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  buildConfiguration: 'Release'
+  dotnetSdkVersion: '10.0.x'
+  webAppName: 'webapp-travessia-rm564361'
+  resourceGroupName: 'rg-travessia-gs2026'
+  keyVaultUri: 'https://kv-travessia-564361.vault.azure.net/'
+  azureServiceConnection: 'azure-rm-travessia'
+
+stages:
+  - stage: Build
+    displayName: 'Build, Test and Package (.NET 10 CI)'
+    jobs:
+      - job: BuildAndTestJob
+        displayName: 'Restore, Build, Test with xUnit and Publish Artifact'
+        steps:
+          - task: UseDotNet@2
+            displayName: 'Install .NET 10 SDK'
+            inputs:
+              packageType: 'sdk'
+              version: '$(dotnetSdkVersion)'
+              includePreviewVersions: true
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Restore NuGet Packages'
+            inputs:
+              command: 'restore'
+              projects: 'TravessIA.sln'
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Build Solution (Release)'
+            inputs:
+              command: 'build'
+              projects: 'TravessIA.sln'
+              arguments: '--configuration $(buildConfiguration) --no-restore'
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Run xUnit Unit and Integration Tests'
+            inputs:
+              command: 'test'
+              projects: 'TravessIA.Tests/TravessIA.Tests.csproj'
+              arguments: '--configuration $(buildConfiguration) --no-build --logger trx --results-directory $(Agent.TempDirectory)/TestResults --collect:"XPlat Code Coverage"'
+              publishTestResults: false
+
+          - task: PublishTestResults@2
+            displayName: 'Publish xUnit Test Results (TRX)'
+            condition: succeededOrFailed()
+            inputs:
+              testResultsFormat: 'VSTest'
+              testResultsFiles: '**/*.trx'
+              searchFolder: '$(Agent.TempDirectory)/TestResults'
+              mergeTestResults: true
+              failTaskOnFailedTests: true
+              testRunTitle: 'TravessIA xUnit Test Suite'
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Publish TravessIA.API Web Application'
+            inputs:
+              command: 'publish'
+              publishWebProjects: false
+              projects: 'TravessIA.API/TravessIA.API.csproj'
+              arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/publish'
+              zipAfterPublish: true
+
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Build Artifact (drop)'
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/publish'
+              ArtifactName: 'drop'
+              publishLocation: 'Container'
+
+  - stage: Release
+    displayName: 'Deploy to Azure App Service Linux F1 (CD)'
+    dependsOn: Build
+    condition: succeeded()
+    jobs:
+      - job: DeployWebAppJob
+        displayName: 'Deploy drop Artifact to Azure Web App'
+        steps:
+          - task: DownloadBuildArtifacts@1
+            displayName: 'Download Build Artifact (drop)'
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: 'drop'
+              downloadPath: '$(System.DefaultWorkingDirectory)'
+
+          - task: AzureWebApp@1
+            displayName: 'Deploy to Azure App Service (webapp-travessia-rm564361)'
+            inputs:
+              azureSubscription: '$(azureServiceConnection)'
+              appType: 'webAppLinux'
+              appName: '$(webAppName)'
+              package: '$(System.DefaultWorkingDirectory)/drop/**/*.zip'
+              appSettings: '-KEYVAULT_URI $(keyVaultUri) -ASPNETCORE_ENVIRONMENT Production'
