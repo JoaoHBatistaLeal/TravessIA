@@ -66,6 +66,7 @@ flowchart LR
 - **Azure Web App**: `webapp-travessia-rm564361` (`https://webapp-travessia-rm564361.azurewebsites.net`) com **System-Assigned Managed Identity**
 - **Azure Key Vault**: `kv-travessia-564361` (`https://kv-travessia-564361.vault.azure.net/`) armazenando os segredos `ConnectionStrings--DefaultConnection` e `JwtSettings--SecretKey` lidos em tempo de execucao via `DefaultAzureCredential`
 - **Azure SQL Server & Database**: `sql-travessia-rm564361.database.windows.net` / `sqldb-travessia` populado via `/scripts/script-bd.sql`
+- **Azure DevOps Organization & Project**: `https://dev.azure.com/OrgJJEGG/TravessIA` (Processo `Scrum`, Azure Boards `Sprint 1`, Pipeline `TravessIA-CI-CD` via `/azure-pipeline.yml`)
 - **URLs Publicas em Producao**:
   - **Swagger UI (Producao)**: `https://webapp-travessia-rm564361.azurewebsites.net/swagger`
   - **OpenAPI JSON**: `https://webapp-travessia-rm564361.azurewebsites.net/swagger/v1/swagger.json`
