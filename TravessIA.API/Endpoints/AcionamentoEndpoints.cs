@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using TravessIA.Application.DTOs.Acionamentos;
 using TravessIA.Application.Services.Interfaces;
 
@@ -42,15 +43,11 @@ public static class AcionamentoEndpoints
         group.MapPost("/", (AcionamentoRequest request, IAcionamentoService service, HttpContext httpContext) =>
             {
                 var headerKey = httpContext.Request.Headers["Idempotency-Key"].FirstOrDefault();
-                if (string.IsNullOrWhiteSpace(headerKey) && string.IsNullOrWhiteSpace(request.ChaveIdempotencia))
-                {
-                    return Results.Problem(
-                        title: "Chave de idempotencia obrigatoria",
-                        detail: "Informe o cabecalho HTTP Idempotency-Key ou o campo chaveIdempotencia no corpo da requisicao.",
-                        statusCode: StatusCodes.Status400BadRequest);
-                }
+                var idClaim = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier)
+                    ?? httpContext.User.FindFirstValue("sub");
+                Guid.TryParse(idClaim, out var authenticatedUserId);
 
-                var (response, isReplayed) = service.Create(request, headerKey);
+                var (response, isReplayed) = service.Create(request, authenticatedUserId, headerKey);
                 httpContext.Response.Headers["X-Idempotent-Replayed"] = isReplayed ? "true" : "false";
 
                 return isReplayed
@@ -60,7 +57,7 @@ public static class AcionamentoEndpoints
             .RequireAuthorization("CidadaoOrGestor")
             .WithName("CreateAcionamento")
             .WithSummary("Solicita acionamento inteligente de travessia com idempotencia e telemetria climatica")
-            .WithDescription("Valida consentimento LGPD (S), trava de distancia do sensor na calcada (0.1m a 5.0m), clima regional (SECO, CHUVA_MODERADA, TEMPESTADE) e perfil de mobilidade. Se a mesma Idempotency-Key for reenviada, retorna 200 OK com X-Idempotent-Replayed: true sem duplicar registro.")
+            .WithDescription("Resolve automaticamente o id_usuario a partir do JWT Bearer token autenticado e o id_semaforo pelo codigoBeacon (padrao BEACON-SP-001). Valida consentimento LGPD (S), trava de distancia do sensor na calcada (0.1m a 5.0m), clima regional (SECO, CHUVA_MODERADA, TEMPESTADE) e perfil de mobilidade. Se a mesma Idempotency-Key for reenviada, retorna 200 OK com X-Idempotent-Replayed: true sem duplicar registro.")
             .Accepts<AcionamentoRequest>("application/json")
             .Produces<AcionamentoResponse>(StatusCodes.Status201Created)
             .Produces<AcionamentoResponse>(StatusCodes.Status200OK)
@@ -68,9 +65,13 @@ public static class AcionamentoEndpoints
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
-        group.MapPut("/{id:guid}", (Guid id, AcionamentoRequest request, IAcionamentoService service) =>
+        group.MapPut("/{id:guid}", (Guid id, AcionamentoRequest request, IAcionamentoService service, HttpContext httpContext) =>
             {
-                var updated = service.Update(id, request);
+                var idClaim = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier)
+                    ?? httpContext.User.FindFirstValue("sub");
+                Guid.TryParse(idClaim, out var authenticatedUserId);
+
+                var updated = service.Update(id, request, authenticatedUserId);
                 return updated is not null
                     ? Results.Ok(updated)
                     : Results.Problem(

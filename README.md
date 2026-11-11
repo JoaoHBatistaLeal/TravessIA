@@ -113,8 +113,8 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 #### Request (`POST /api/v1/auth/login`)
 ```json
 {
-  "email": "gestor@travessia.sp.gov.br",
-  "senha": "TravessIA#2026"
+  "email": "gestor@travessia.com.br",
+  "senha": "Admin@TravessIA2026"
 }
 ```
 
@@ -123,9 +123,9 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 {
   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "expiresAtUtc": "2026-11-11T20:56:41Z",
-  "idUsuario": "33333333-3333-3333-3333-333333333301",
+  "idUsuario": "33333333-3333-3333-3333-333333333303",
   "nome": "Gestor Mobilidade Urbana",
-  "email": "gestor@travessia.sp.gov.br",
+  "email": "gestor@travessia.com.br",
   "role": "GESTOR",
   "idPerfil": "11111111-1111-1111-1111-111111111101"
 }
@@ -290,18 +290,16 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 
 #### 1) Solicitar Travessia Inteligente - `POST /api/v1/acionamentos` (Requer Bearer Token `CIDADAO` ou `GESTOR`)
 **Headers:**
-- `Authorization: Bearer <token>`
-- `Idempotency-Key: cloud-prod-travessia-2026-001`
+- `Authorization: Bearer <token>` (o `id_usuario` e extraido automaticamente das claims do token JWT)
+- `Idempotency-Key: cloud-prod-travessia-2026-001` (opcional no Swagger UI; quando enviado, garante idempotencia `X-Idempotent-Replayed: true`)
 
 **Request Body:**
 ```json
 {
-  "idUsuario": "33333333-3333-3333-3333-333333333302",
-  "idSemaforo": "22222222-2222-2222-2222-222222222201",
-  "chaveIdempotencia": "cloud-prod-travessia-2026-001",
-  "distanciaSensorM": 1.80,
+  "codigoBeacon": "BEACON-SP-001",
+  "distanciaSensorM": 3.50,
   "condicaoClima": "CHUVA_MODERADA",
-  "intensidadeChuvaMm": 14.50
+  "intensidadeChuvaMm": 12.50
 }
 ```
 
@@ -392,15 +390,15 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 ### 6.6. CRUD Tabela 4: `TB_USUARIO` (`/api/v1/usuarios`)
 
 #### 1) Cadastrar Cidadao - `POST /api/v1/auth/register`
-**Request Body:**
+**Request Body (sem necessidade de informar GUID; `id_perfil` resolvido automaticamente por `codigoPerfil` ou idade >= 60 anos):**
 ```json
 {
-  "idPerfil": "11111111-1111-1111-1111-111111111102",
-  "nome": "Helena Souza Idosa",
-  "email": "helena.idosa@cidadao.sp.gov.br",
-  "senha": "Password123!",
+  "nome": "Maria Aparecida",
+  "email": "maria.cidada@travessia.com.br",
+  "senha": "TravessIA@2026",
   "role": "CIDADAO",
-  "anoNascimento": 1948,
+  "anoNascimento": 1952,
+  "codigoPerfil": "IDOSO",
   "consentimentoLgpd": "S"
 }
 ```
@@ -411,8 +409,8 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "expiresAtUtc": "2026-11-11T21:30:00Z",
   "idUsuario": "33333333-3333-3333-3333-333333333304",
-  "nome": "Helena Souza Idosa",
-  "email": "helena.idosa@cidadao.sp.gov.br",
+  "nome": "Maria Aparecida",
+  "email": "maria.cidada@travessia.com.br",
   "role": "CIDADAO",
   "idPerfil": "11111111-1111-1111-1111-111111111102"
 }
@@ -425,10 +423,10 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
   "idUsuario": "33333333-3333-3333-3333-333333333304",
   "idPerfil": "11111111-1111-1111-1111-111111111102",
   "codigoPerfil": "IDOSO",
-  "nome": "Helena Souza Idosa",
-  "email": "helena.idosa@cidadao.sp.gov.br",
+  "nome": "Maria Aparecida",
+  "email": "maria.cidada@travessia.com.br",
   "role": "CIDADAO",
-  "anoNascimento": 1948,
+  "anoNascimento": 1952,
   "consentimentoLgpd": "S",
   "dtCadastro": "2026-11-11T19:30:00Z"
 }
@@ -438,11 +436,11 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 **Request Body:**
 ```json
 {
-  "idPerfil": "11111111-1111-1111-1111-111111111103",
-  "nome": "Helena Souza Cadeirante",
-  "email": "helena.idosa@cidadao.sp.gov.br",
+  "nome": "Maria Aparecida Cadeirante",
+  "email": "maria.cidada@travessia.com.br",
   "role": "CIDADAO",
-  "anoNascimento": 1948,
+  "anoNascimento": 1952,
+  "codigoPerfil": "CADEIRANTE",
   "consentimentoLgpd": "S"
 }
 ```
@@ -453,10 +451,10 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
   "idUsuario": "33333333-3333-3333-3333-333333333304",
   "idPerfil": "11111111-1111-1111-1111-111111111103",
   "codigoPerfil": "CADEIRANTE",
-  "nome": "Helena Souza Cadeirante",
-  "email": "helena.idosa@cidadao.sp.gov.br",
+  "nome": "Maria Aparecida Cadeirante",
+  "email": "maria.cidada@travessia.com.br",
   "role": "CIDADAO",
-  "anoNascimento": 1948,
+  "anoNascimento": 1952,
   "consentimentoLgpd": "S",
   "dtCadastro": "2026-11-11T19:30:00Z"
 }

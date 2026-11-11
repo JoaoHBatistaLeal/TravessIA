@@ -16,6 +16,7 @@ public static class TravessIASeeder
 
     public static readonly Guid UsuarioGestorId = Guid.Parse("33333333-3333-3333-3333-333333333301");
     public static readonly Guid UsuarioCidadaoId = Guid.Parse("33333333-3333-3333-3333-333333333302");
+    public static readonly Guid UsuarioGestorSwaggerId = Guid.Parse("33333333-3333-3333-3333-333333333303");
 
     public static void Seed(TravessIAContext context)
     {
@@ -65,35 +66,55 @@ public static class TravessIASeeder
             }
         }
 
-        if (!context.Usuarios.Any())
+        var perfilPadrao = context.PerfisMobilidade.First(p => p.Codigo == "PADRAO");
+        var perfilIdoso = context.PerfisMobilidade.First(p => p.Codigo == "IDOSO");
+        var demoAccess = Environment.GetEnvironmentVariable("TRAVESSIA_DEMO_ACCESS") ?? "TravessIA#2026";
+        var swaggerGestorAccess = Environment.GetEnvironmentVariable("TRAVESSIA_SWAGGER_ACCESS") ?? "Admin@TravessIA2026";
+
+        var novosUsuarios = new List<Usuario>();
+
+        if (!context.Usuarios.Any(u => u.Email == "gestor@travessia.sp.gov.br"))
         {
-            var perfilPadrao = context.PerfisMobilidade.First(p => p.Codigo == "PADRAO");
-            var perfilIdoso = context.PerfisMobilidade.First(p => p.Codigo == "IDOSO");
-            var demoAccess = Environment.GetEnvironmentVariable("TRAVESSIA_DEMO_ACCESS") ?? "TravessIA#2026";
+            novosUsuarios.Add(new(
+                perfilPadrao.Id,
+                "Gestor CET Sao Paulo",
+                "gestor@travessia.sp.gov.br",
+                demoAccess,
+                Usuario.RoleGestor,
+                1985,
+                "S",
+                UsuarioGestorId));
+        }
 
-            var usuarios = new List<Usuario>
-            {
-                new(
-                    perfilPadrao.Id,
-                    "Gestor CET Sao Paulo",
-                    "gestor@travessia.sp.gov.br",
-                    demoAccess,
-                    Usuario.RoleGestor,
-                    1985,
-                    "S",
-                    UsuarioGestorId),
-                new(
-                    perfilIdoso.Id,
-                    "Cidadao Prioritario TravessIA",
-                    "cidadao@travessia.sp.gov.br",
-                    demoAccess,
-                    Usuario.RoleCidadao,
-                    1952,
-                    "S",
-                    UsuarioCidadaoId)
-            };
+        if (!context.Usuarios.Any(u => u.Email == "cidadao@travessia.sp.gov.br"))
+        {
+            novosUsuarios.Add(new(
+                perfilIdoso.Id,
+                "Cidadao Prioritario TravessIA",
+                "cidadao@travessia.sp.gov.br",
+                demoAccess,
+                Usuario.RoleCidadao,
+                1952,
+                "S",
+                UsuarioCidadaoId));
+        }
 
-            context.Usuarios.AddRange(usuarios);
+        if (!context.Usuarios.Any(u => u.Email == "gestor@travessia.com.br"))
+        {
+            novosUsuarios.Add(new(
+                perfilPadrao.Id,
+                "Gestor Mobilidade Urbana",
+                "gestor@travessia.com.br",
+                swaggerGestorAccess,
+                Usuario.RoleGestor,
+                1985,
+                "S",
+                UsuarioGestorSwaggerId));
+        }
+
+        if (novosUsuarios.Count > 0)
+        {
+            context.Usuarios.AddRange(novosUsuarios);
             context.SaveChanges();
         }
     }

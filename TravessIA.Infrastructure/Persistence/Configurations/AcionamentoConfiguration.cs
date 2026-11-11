@@ -14,7 +14,8 @@ public sealed class AcionamentoConfiguration : IEntityTypeConfiguration<Acioname
 
         builder.Property(a => a.Id)
             .HasColumnName("id_acionamento")
-            .ValueGeneratedNever();
+            .ValueGeneratedOnAdd()
+            .HasDefaultValueSql("NEWID()");
 
         builder.Property(a => a.IdUsuario)
             .HasColumnName("id_usuario")

@@ -1,7 +1,13 @@
 using System.ComponentModel;
 using System.Reflection;
+using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using TravessIA.Application.DTOs.Acionamentos;
+using TravessIA.Application.DTOs.Auth;
+using TravessIA.Application.DTOs.PerfisMobilidade;
+using TravessIA.Application.DTOs.Semaforos;
+using TravessIA.Application.DTOs.Usuarios;
 
 namespace TravessIA.API.Extensions;
 
@@ -61,6 +67,8 @@ public sealed class DescriptionSchemaFilter : ISchemaFilter
             schema.Description = typeDescription.Description;
         }
 
+        ApplyRealisticExample(schema, context.Type);
+
         if (schema.Properties is null || schema.Properties.Count == 0)
         {
             return;
@@ -81,6 +89,76 @@ public sealed class DescriptionSchemaFilter : ISchemaFilter
             {
                 schema.Properties[matchingKey].Description = propDescription.Description;
             }
+        }
+    }
+
+    private static void ApplyRealisticExample(OpenApiSchema schema, Type type)
+    {
+        if (type == typeof(RegisterRequest) || type == typeof(UsuarioRequest))
+        {
+            schema.Example = new OpenApiObject
+            {
+                ["nome"] = new OpenApiString("Maria Aparecida"),
+                ["email"] = new OpenApiString("maria.cidada@travessia.com.br"),
+                ["senha"] = new OpenApiString("TravessIA@2026"),
+                ["role"] = new OpenApiString("CIDADAO"),
+                ["anoNascimento"] = new OpenApiInteger(1952),
+                ["codigoPerfil"] = new OpenApiString("IDOSO"),
+                ["consentimentoLgpd"] = new OpenApiString("S")
+            };
+        }
+        else if (type == typeof(UsuarioUpdateRequest))
+        {
+            schema.Example = new OpenApiObject
+            {
+                ["nome"] = new OpenApiString("Maria Aparecida"),
+                ["email"] = new OpenApiString("maria.cidada@travessia.com.br"),
+                ["role"] = new OpenApiString("CIDADAO"),
+                ["anoNascimento"] = new OpenApiInteger(1952),
+                ["codigoPerfil"] = new OpenApiString("CADEIRANTE"),
+                ["consentimentoLgpd"] = new OpenApiString("S")
+            };
+        }
+        else if (type == typeof(LoginRequest))
+        {
+            schema.Example = new OpenApiObject
+            {
+                ["email"] = new OpenApiString("gestor@travessia.com.br"),
+                ["senha"] = new OpenApiString("Admin@TravessIA2026")
+            };
+        }
+        else if (type == typeof(AcionamentoRequest))
+        {
+            schema.Example = new OpenApiObject
+            {
+                ["codigoBeacon"] = new OpenApiString("BEACON-SP-001"),
+                ["distanciaSensorM"] = new OpenApiDouble(3.5),
+                ["condicaoClima"] = new OpenApiString("CHUVA_MODERADA"),
+                ["intensidadeChuvaMm"] = new OpenApiDouble(12.5)
+            };
+        }
+        else if (type == typeof(SemaforoRequest))
+        {
+            schema.Example = new OpenApiObject
+            {
+                ["codigoBeacon"] = new OpenApiString("BEACON-SP-010"),
+                ["endereco"] = new OpenApiString("Av. Paulista, 1106"),
+                ["latitude"] = new OpenApiDouble(-23.5641),
+                ["longitude"] = new OpenApiDouble(-46.6524),
+                ["larguraViaM"] = new OpenApiDouble(14.0),
+                ["tempoBaseSeg"] = new OpenApiInteger(15),
+                ["statusOperacional"] = new OpenApiString("ATIVO")
+            };
+        }
+        else if (type == typeof(PerfilMobilidadeRequest))
+        {
+            schema.Example = new OpenApiObject
+            {
+                ["codigo"] = new OpenApiString("GESTANTE"),
+                ["descricao"] = new OpenApiString("Gestante ou pessoa com crianca de colo"),
+                ["segExtraSeco"] = new OpenApiInteger(6),
+                ["segExtraChuva"] = new OpenApiInteger(12)
+            };
         }
     }
 }

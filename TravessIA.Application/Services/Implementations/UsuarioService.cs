@@ -1,6 +1,7 @@
 using TravessIA.Application.DTOs.Usuarios;
 using TravessIA.Application.Repositories;
 using TravessIA.Application.Services.Interfaces;
+using TravessIA.Domain.Entities;
 using TravessIA.Domain.Exceptions;
 
 namespace TravessIA.Application.Services.Implementations;
@@ -26,13 +27,29 @@ public sealed class UsuarioService(
 
     public UsuarioResponse Create(UsuarioRequest request)
     {
-        if (!perfilRepository.ExistsById(request.IdPerfil))
-            throw new DomainException("Perfil de mobilidade informado nao existe.");
-
         if (usuarioRepository.ExistsByEmail(request.Email))
             throw new DomainException("Ja existe um usuario cadastrado com este e-mail.");
 
-        var entity = request.ToDomain();
+        var idPerfil = AuthService.ResolvePerfilId(perfilRepository, request.CodigoPerfil, request.AnoNascimento);
+        var resolvedRole = string.IsNullOrWhiteSpace(request.Role) ||
+                           string.Equals(request.Role.Trim(), "STRING", StringComparison.OrdinalIgnoreCase)
+            ? Usuario.RoleCidadao
+            : request.Role.Trim();
+        var resolvedConsent = string.IsNullOrWhiteSpace(request.ConsentimentoLgpd) ||
+                              string.Equals(request.ConsentimentoLgpd.Trim(), "STRING", StringComparison.OrdinalIgnoreCase)
+            ? "S"
+            : request.ConsentimentoLgpd.Trim();
+
+        var entity = new Usuario(
+            idPerfil,
+            request.Nome,
+            request.Email,
+            request.Senha,
+            resolvedRole,
+            request.AnoNascimento,
+            resolvedConsent,
+            Guid.NewGuid());
+
         entity.EnsureLgpdConsent();
         usuarioRepository.Add(entity);
         return UsuarioResponse.FromDomain(entity);
@@ -44,19 +61,26 @@ public sealed class UsuarioService(
         if (entity is null)
             return null;
 
-        if (!perfilRepository.ExistsById(request.IdPerfil))
-            throw new DomainException("Perfil de mobilidade informado nao existe.");
-
         if (usuarioRepository.ExistsByEmail(request.Email, id))
             throw new DomainException("Ja existe outro usuario cadastrado com este e-mail.");
 
+        var idPerfil = AuthService.ResolvePerfilId(perfilRepository, request.CodigoPerfil, request.AnoNascimento);
+        var resolvedRole = string.IsNullOrWhiteSpace(request.Role) ||
+                           string.Equals(request.Role.Trim(), "STRING", StringComparison.OrdinalIgnoreCase)
+            ? entity.Role
+            : request.Role.Trim();
+        var resolvedConsent = string.IsNullOrWhiteSpace(request.ConsentimentoLgpd) ||
+                              string.Equals(request.ConsentimentoLgpd.Trim(), "STRING", StringComparison.OrdinalIgnoreCase)
+            ? "S"
+            : request.ConsentimentoLgpd.Trim();
+
         entity.Update(
-            request.IdPerfil,
+            idPerfil,
             request.Nome,
             request.Email,
-            request.Role,
+            resolvedRole,
             request.AnoNascimento,
-            request.ConsentimentoLgpd);
+            resolvedConsent);
 
         entity.EnsureLgpdConsent();
 
@@ -64,7 +88,8 @@ public sealed class UsuarioService(
             entity.ChangePassword(request.NovaSenha);
 
         usuarioRepository.Update(entity);
-        return UsuarioResponse.FromDomain(entity);
+        var refreshed = usuarioRepository.GetById(id) ?? entity;
+        return UsuarioResponse.FromDomain(refreshed);
     }
 
     public bool Delete(Guid id) => usuarioRepository.Delete(id);
