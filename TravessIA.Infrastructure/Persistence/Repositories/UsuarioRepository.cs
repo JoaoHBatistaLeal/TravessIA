@@ -13,7 +13,7 @@ public sealed class UsuarioRepository(TravessIAContext context) : IUsuarioReposi
             .OrderBy(u => u.Id)
             .ToList();
 
-    public Usuario? GetById(int id) =>
+    public Usuario? GetById(Guid id) =>
         context.Usuarios
             .Include(u => u.PerfilMobilidade)
             .FirstOrDefault(u => u.Id == id);
@@ -29,10 +29,10 @@ public sealed class UsuarioRepository(TravessIAContext context) : IUsuarioReposi
             .FirstOrDefault(u => u.Email.ToLower() == normalized);
     }
 
-    public bool ExistsById(int id) =>
+    public bool ExistsById(Guid id) =>
         context.Usuarios.Any(u => u.Id == id);
 
-    public bool ExistsByEmail(string email, int? excludeId = null)
+    public bool ExistsByEmail(string email, Guid? excludeId = null)
     {
         if (string.IsNullOrWhiteSpace(email))
             return false;
@@ -56,7 +56,7 @@ public sealed class UsuarioRepository(TravessIAContext context) : IUsuarioReposi
         return entity;
     }
 
-    public bool Delete(int id)
+    public bool Delete(Guid id)
     {
         var entity = context.Usuarios.Find(id);
         if (entity is null)

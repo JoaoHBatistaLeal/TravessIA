@@ -11,7 +11,7 @@ public sealed record AuthResponse(
     DateTime ExpiresAtUtc,
 
     [property: Description("Identificador unico do usuario (id_usuario).")]
-    int IdUsuario,
+    Guid IdUsuario,
 
     [property: Description("Nome completo do usuario autenticado.")]
     string Nome,
@@ -23,4 +23,4 @@ public sealed record AuthResponse(
     string Role,
 
     [property: Description("Identificador do perfil de mobilidade associado ao usuario.")]
-    int IdPerfil);
+    Guid IdPerfil);

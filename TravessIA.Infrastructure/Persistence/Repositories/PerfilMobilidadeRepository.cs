@@ -12,7 +12,7 @@ public sealed class PerfilMobilidadeRepository(TravessIAContext context) : IPerf
             .OrderBy(p => p.Id)
             .ToList();
 
-    public PerfilMobilidade? GetById(int id) =>
+    public PerfilMobilidade? GetById(Guid id) =>
         context.PerfisMobilidade.Find(id);
 
     public PerfilMobilidade? GetByCodigo(string codigo)
@@ -25,10 +25,10 @@ public sealed class PerfilMobilidadeRepository(TravessIAContext context) : IPerf
             .FirstOrDefault(p => p.Codigo.ToUpper() == normalized);
     }
 
-    public bool ExistsById(int id) =>
+    public bool ExistsById(Guid id) =>
         context.PerfisMobilidade.Any(p => p.Id == id);
 
-    public bool ExistsByCodigo(string codigo, int? excludeId = null)
+    public bool ExistsByCodigo(string codigo, Guid? excludeId = null)
     {
         if (string.IsNullOrWhiteSpace(codigo))
             return false;
@@ -52,7 +52,7 @@ public sealed class PerfilMobilidadeRepository(TravessIAContext context) : IPerf
         return entity;
     }
 
-    public bool Delete(int id)
+    public bool Delete(Guid id)
     {
         var entity = context.PerfisMobilidade.Find(id);
         if (entity is null)

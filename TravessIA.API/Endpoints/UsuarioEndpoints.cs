@@ -21,7 +21,7 @@ public static class UsuarioEndpoints
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
-        group.MapGet("/{id:int}", (int id, IUsuarioService service) =>
+        group.MapGet("/{id:guid}", (Guid id, IUsuarioService service) =>
             {
                 var response = service.GetById(id);
                 return response is not null
@@ -54,7 +54,7 @@ public static class UsuarioEndpoints
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
-        group.MapPut("/{id:int}", (int id, UsuarioUpdateRequest request, IUsuarioService service) =>
+        group.MapPut("/{id:guid}", (Guid id, UsuarioUpdateRequest request, IUsuarioService service) =>
             {
                 var updated = service.Update(id, request);
                 return updated is not null
@@ -75,7 +75,7 @@ public static class UsuarioEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
-        group.MapDelete("/{id:int}", (int id, IUsuarioService service) =>
+        group.MapDelete("/{id:guid}", (Guid id, IUsuarioService service) =>
             {
                 var deleted = service.Delete(id);
                 return deleted

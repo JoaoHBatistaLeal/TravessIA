@@ -5,11 +5,11 @@ namespace TravessIA.Application.Repositories;
 public interface IPerfilMobilidadeRepository
 {
     IReadOnlyList<PerfilMobilidade> GetAll();
-    PerfilMobilidade? GetById(int id);
+    PerfilMobilidade? GetById(Guid id);
     PerfilMobilidade? GetByCodigo(string codigo);
-    bool ExistsById(int id);
-    bool ExistsByCodigo(string codigo, int? excludeId = null);
+    bool ExistsById(Guid id);
+    bool ExistsByCodigo(string codigo, Guid? excludeId = null);
     PerfilMobilidade Add(PerfilMobilidade entity);
     PerfilMobilidade Update(PerfilMobilidade entity);
-    bool Delete(int id);
+    bool Delete(Guid id);
 }

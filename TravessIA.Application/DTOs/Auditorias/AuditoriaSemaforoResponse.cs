@@ -6,10 +6,10 @@ namespace TravessIA.Application.DTOs.Auditorias;
 [Description("Registro imutavel de auditoria de semaforo armazenado em TB_AUDITORIA_SEMAFORO.")]
 public sealed record AuditoriaSemaforoResponse(
     [property: Description("Identificador unico da auditoria (id_auditoria).")]
-    int IdAuditoria,
+    Guid IdAuditoria,
 
     [property: Description("Identificador do semaforo auditado (id_semaforo, sem FK).")]
-    int IdSemaforo,
+    Guid IdSemaforo,
 
     [property: Description("Operacao realizada: INSERT, UPDATE ou DELETE.")]
     string Operacao,

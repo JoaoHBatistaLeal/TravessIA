@@ -20,7 +20,7 @@ public static class SemaforoEndpoints
             .Produces<IReadOnlyList<SemaforoResponse>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
-        group.MapGet("/{id:int}", (int id, ISemaforoService service) =>
+        group.MapGet("/{id:guid}", (Guid id, ISemaforoService service) =>
             {
                 var response = service.GetById(id);
                 return response is not null
@@ -55,7 +55,7 @@ public static class SemaforoEndpoints
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
-        group.MapPut("/{id:int}", (int id, SemaforoUpdateRequest request, ISemaforoService service, ClaimsPrincipal user) =>
+        group.MapPut("/{id:guid}", (Guid id, SemaforoUpdateRequest request, ISemaforoService service, ClaimsPrincipal user) =>
             {
                 var actor = ResolveActor(user);
                 var updated = service.Update(id, request, actor);
@@ -78,7 +78,7 @@ public static class SemaforoEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
-        group.MapDelete("/{id:int}", (int id, ISemaforoService service, ClaimsPrincipal user) =>
+        group.MapDelete("/{id:guid}", (Guid id, ISemaforoService service, ClaimsPrincipal user) =>
             {
                 var actor = ResolveActor(user);
                 var deleted = service.Delete(id, actor);

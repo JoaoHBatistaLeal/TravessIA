@@ -8,9 +8,9 @@ public class AuditoriaSemaforo
     public const string OperacaoUpdate = "UPDATE";
     public const string OperacaoDelete = "DELETE";
 
-    public int Id { get; private set; }
+    public Guid Id { get; private set; }
 
-    public int IdSemaforo { get; private set; }
+    public Guid IdSemaforo { get; private set; }
 
     public string Operacao { get; private set; } = string.Empty;
 
@@ -29,14 +29,15 @@ public class AuditoriaSemaforo
     }
 
     public AuditoriaSemaforo(
-        int idSemaforo,
+        Guid idSemaforo,
         string operacao,
         string campoAlterado,
         string? valorAntigo,
         string? valorNovo,
-        string usuarioBd)
+        string usuarioBd,
+        Guid? id = null)
     {
-        if (idSemaforo <= 0)
+        if (idSemaforo == Guid.Empty)
             throw new DomainException("Identificador do semaforo para auditoria e invalido.");
 
         if (string.IsNullOrWhiteSpace(operacao))
@@ -49,6 +50,7 @@ public class AuditoriaSemaforo
         if (string.IsNullOrWhiteSpace(campoAlterado))
             throw new DomainException("Campo alterado na auditoria e obrigatorio.");
 
+        Id = id.HasValue && id.Value != Guid.Empty ? id.Value : Guid.NewGuid();
         IdSemaforo = idSemaforo;
         Operacao = normalizedOperacao;
         CampoAlterado = Truncate(campoAlterado.Trim(), 60);

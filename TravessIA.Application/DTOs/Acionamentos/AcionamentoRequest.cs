@@ -5,10 +5,10 @@ namespace TravessIA.Application.DTOs.Acionamentos;
 [Description("Payload para solicitacao de acionamento inteligente de travessia de pedestres em TB_ACIONAMENTO.")]
 public sealed record AcionamentoRequest(
     [property: Description("Identificador do usuario solicitante (id_usuario).")]
-    int IdUsuario,
+    Guid IdUsuario,
 
     [property: Description("Identificador do semaforo acionado (id_semaforo).")]
-    int IdSemaforo,
+    Guid IdSemaforo,
 
     [property: Description("Distancia medida pelo sensor de aproximacao na calcada em metros (deve estar entre 0.1m e 5.0m).")]
     decimal DistanciaSensorM,

@@ -10,7 +10,7 @@ public sealed class PerfilMobilidadeService(IPerfilMobilidadeRepository reposito
     public IReadOnlyList<PerfilMobilidadeResponse> GetAll() =>
         repository.GetAll().Select(PerfilMobilidadeResponse.FromDomain).ToList();
 
-    public PerfilMobilidadeResponse? GetById(int id)
+    public PerfilMobilidadeResponse? GetById(Guid id)
     {
         var entity = repository.GetById(id);
         return entity is null ? null : PerfilMobilidadeResponse.FromDomain(entity);
@@ -32,7 +32,7 @@ public sealed class PerfilMobilidadeService(IPerfilMobilidadeRepository reposito
         return PerfilMobilidadeResponse.FromDomain(entity);
     }
 
-    public PerfilMobilidadeResponse? Update(int id, PerfilMobilidadeRequest request)
+    public PerfilMobilidadeResponse? Update(Guid id, PerfilMobilidadeRequest request)
     {
         var entity = repository.GetById(id);
         if (entity is null)
@@ -46,5 +46,5 @@ public sealed class PerfilMobilidadeService(IPerfilMobilidadeRepository reposito
         return PerfilMobilidadeResponse.FromDomain(entity);
     }
 
-    public bool Delete(int id) => repository.Delete(id);
+    public bool Delete(Guid id) => repository.Delete(id);
 }

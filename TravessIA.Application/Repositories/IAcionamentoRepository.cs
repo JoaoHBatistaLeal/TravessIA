@@ -5,11 +5,11 @@ namespace TravessIA.Application.Repositories;
 public interface IAcionamentoRepository
 {
     IReadOnlyList<Acionamento> GetAll();
-    Acionamento? GetById(int id);
+    Acionamento? GetById(Guid id);
     Acionamento? GetByChaveIdempotencia(string chaveIdempotencia);
-    IReadOnlyList<Acionamento> GetByUsuarioId(int idUsuario);
-    IReadOnlyList<Acionamento> GetBySemaforoId(int idSemaforo);
+    IReadOnlyList<Acionamento> GetByUsuarioId(Guid idUsuario);
+    IReadOnlyList<Acionamento> GetBySemaforoId(Guid idSemaforo);
     Acionamento Add(Acionamento entity);
     Acionamento Update(Acionamento entity);
-    bool Delete(int id);
+    bool Delete(Guid id);
 }

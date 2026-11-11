@@ -78,11 +78,11 @@ flowchart LR
 
 O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entidade-relacionamento no script `/scripts/script-bd.sql` e no mapeamento Fluent API do Entity Framework Core (`TravessIA.Infrastructure`):
 
-1. **`TB_PERFIL_MOBILIDADE`**: Cadastro de perfis de mobilidade (`id_perfil` PK Identity, `codigo` UK, `descricao`, `seg_extra_seco`, `seg_extra_chuva`) com carga inicial para `PADRAO`, `IDOSO`, `CADEIRANTE`, `DEFICIENCIA_VISUAL` e `MOBILIDADE_REDUZIDA`.
-2. **`TB_USUARIO`**: Cadastro de cidadaos e gestores (`id_usuario` PK Identity, `id_perfil` FK, `nome`, `email` UK, `senha_hash` BCrypt, `role` `CIDADAO`/`GESTOR`, `ano_nascimento`, `consentimento_lgpd` `'S'`/`'N'`, `dt_cadastro`).
-3. **`TB_SEMAFORO`**: Cadastro de cruzamentos semaforicos monitorados por beacons (`id_semaforo` PK Identity, `codigo_beacon` UK, `endereco`, `latitude`, `longitude`, `largura_via_m`, `tempo_base_seg`, `status_operacional` `ATIVO`/`MANUTENCAO`/`MODO_CHUVA`).
-4. **`TB_ACIONAMENTO`**: Registro de acionamentos de travessia inteligente (`id_acionamento` PK Identity, `id_usuario` FK, `id_semaforo` FK, `chave_idempotencia` UK, `dt_hora`, `distancia_sensor_m`, `condicao_clima` `SECO`/`CHUVA_MODERADA`/`TEMPESTADE`, `intensidade_chuva_mm`, `tempo_extra_seg`, `justificativa_ia`).
-5. **`TB_AUDITORIA_SEMAFORO`**: Tabela de auditoria automatica sem restricao de chave estrangeira (`registra (sem FK)`) para preservar o historico mesmo apos delecao de semaforos (`id_auditoria` PK Identity, `id_semaforo`, `operacao` `INSERT`/`UPDATE`/`DELETE`, `campo_alterado`, `valor_antigo`, `valor_novo`, `usuario_bd`, `dt_operacao`).
+1. **`TB_PERFIL_MOBILIDADE`**: Cadastro de perfis de mobilidade (`id_perfil` PK `UNIQUEIDENTIFIER` / `Guid`, `codigo` UK, `descricao`, `seg_extra_seco`, `seg_extra_chuva`) com carga inicial deterministica para `PADRAO` (`11111111-1111-1111-1111-111111111101`), `IDOSO` (`11111111-1111-1111-1111-111111111102`), `CADEIRANTE` (`11111111-1111-1111-1111-111111111103`), `DEFICIENCIA_VISUAL` (`11111111-1111-1111-1111-111111111104`) e `MOBILIDADE_REDUZIDA` (`11111111-1111-1111-1111-111111111105`).
+2. **`TB_USUARIO`**: Cadastro de cidadaos e gestores (`id_usuario` PK `UNIQUEIDENTIFIER` / `Guid`, `id_perfil` FK `UNIQUEIDENTIFIER` / `Guid`, `nome`, `email` UK, `senha_hash` BCrypt, `role` `CIDADAO`/`GESTOR`, `ano_nascimento`, `consentimento_lgpd` `'S'`/`'N'`, `dt_cadastro`).
+3. **`TB_SEMAFORO`**: Cadastro de cruzamentos semaforicos monitorados por beacons (`id_semaforo` PK `UNIQUEIDENTIFIER` / `Guid`, `codigo_beacon` UK, `endereco`, `latitude`, `longitude`, `largura_via_m`, `tempo_base_seg`, `status_operacional` `ATIVO`/`MANUTENCAO`/`MODO_CHUVA`) com carga inicial deterministica para `BEACON-SP-001` (`22222222-2222-2222-2222-222222222201`), `BEACON-SP-002` (`22222222-2222-2222-2222-222222222202`) e `BEACON-SP-003` (`22222222-2222-2222-2222-222222222203`).
+4. **`TB_ACIONAMENTO`**: Registro de acionamentos de travessia inteligente (`id_acionamento` PK `UNIQUEIDENTIFIER` / `Guid`, `id_usuario` FK `UNIQUEIDENTIFIER` / `Guid`, `id_semaforo` FK `UNIQUEIDENTIFIER` / `Guid`, `chave_idempotencia` UK, `dt_hora`, `distancia_sensor_m`, `condicao_clima` `SECO`/`CHUVA_MODERADA`/`TEMPESTADE`, `intensidade_chuva_mm`, `tempo_extra_seg`, `justificativa_ia`).
+5. **`TB_AUDITORIA_SEMAFORO`**: Tabela de auditoria automatica sem restricao de chave estrangeira (`registra (sem FK)`) para preservar o historico mesmo apos delecao de semaforos (`id_auditoria` PK `UNIQUEIDENTIFIER` / `Guid`, `id_semaforo` `UNIQUEIDENTIFIER` / `Guid`, `operacao` `INSERT`/`UPDATE`/`DELETE`, `campo_alterado`, `valor_antigo`, `valor_novo`, `usuario_bd`, `dt_operacao`).
 
 ---
 
@@ -114,7 +114,7 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 ```json
 {
   "email": "gestor@travessia.sp.gov.br",
-  "senha": "Password123!"
+  "senha": "TravessIA#2026"
 }
 ```
 
@@ -123,11 +123,11 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 {
   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "expiresAtUtc": "2026-11-11T20:56:41Z",
-  "idUsuario": 1,
-  "nome": "Gestor CET Sao Paulo",
+  "idUsuario": "33333333-3333-3333-3333-333333333301",
+  "nome": "Gestor Mobilidade Urbana",
   "email": "gestor@travessia.sp.gov.br",
   "role": "GESTOR",
-  "idPerfil": 1
+  "idPerfil": "11111111-1111-1111-1111-111111111101"
 }
 ```
 
@@ -152,7 +152,7 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 **Response (`201 Created`):**
 ```json
 {
-  "idSemaforo": 4,
+  "idSemaforo": "22222222-2222-2222-2222-222222222204",
   "codigoBeacon": "BEACON-IBIRAPUERA-500",
   "endereco": "Av. Pedro Alvares Cabral, 500 - Vila Mariana, Sao Paulo - SP",
   "latitude": -23.5874162,
@@ -168,17 +168,17 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 ```json
 [
   {
-    "idSemaforo": 1,
-    "codigoBeacon": "BEACON-PAULISTA-1106",
+    "idSemaforo": "22222222-2222-2222-2222-222222222201",
+    "codigoBeacon": "BEACON-SP-001",
     "endereco": "Av. Paulista, 1106 - Bela Vista, Sao Paulo - SP",
     "latitude": -23.5641095,
     "longitude": -46.6524099,
     "larguraViaM": 18.50,
-    "tempoBaseSeg": 22,
+    "tempoBaseSeg": 15,
     "statusOperacional": "ATIVO"
   },
   {
-    "idSemaforo": 4,
+    "idSemaforo": "22222222-2222-2222-2222-222222222204",
     "codigoBeacon": "BEACON-IBIRAPUERA-500",
     "endereco": "Av. Pedro Alvares Cabral, 500 - Vila Mariana, Sao Paulo - SP",
     "latitude": -23.5874162,
@@ -190,10 +190,11 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 ]
 ```
 
-#### 3) Atualizar Semaforo - `PUT /api/v1/semaforos/4` (Requer Bearer Token `GESTOR`)
+#### 3) Atualizar Semaforo - `PUT /api/v1/semaforos/22222222-2222-2222-2222-222222222204` (Requer Bearer Token `GESTOR`)
 **Request Body:**
 ```json
 {
+  "codigoBeacon": "BEACON-IBIRAPUERA-500",
   "endereco": "Av. Pedro Alvares Cabral, 500 - Portao 3 Ibirapuera, Sao Paulo - SP",
   "latitude": -23.5874162,
   "longitude": -46.6576338,
@@ -206,7 +207,7 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 **Response (`200 OK`):**
 ```json
 {
-  "idSemaforo": 4,
+  "idSemaforo": "22222222-2222-2222-2222-222222222204",
   "codigoBeacon": "BEACON-IBIRAPUERA-500",
   "endereco": "Av. Pedro Alvares Cabral, 500 - Portao 3 Ibirapuera, Sao Paulo - SP",
   "latitude": -23.5874162,
@@ -217,7 +218,7 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 }
 ```
 
-#### 4) Remover Semaforo - `DELETE /api/v1/semaforos/4` (Requer Bearer Token `GESTOR`)
+#### 4) Remover Semaforo - `DELETE /api/v1/semaforos/22222222-2222-2222-2222-222222222204` (Requer Bearer Token `GESTOR`)
 **Response:** `204 No Content` (Gera registro automatico de auditoria `DELETE` em `TB_AUDITORIA_SEMAFORO`).
 
 ---
@@ -238,7 +239,7 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 **Response (`201 Created`):**
 ```json
 {
-  "idPerfil": 6,
+  "idPerfil": "11111111-1111-1111-1111-111111111106",
   "codigo": "GESTANTE_INFANTIL",
   "descricao": "Gestantes e responsaveis com carrinho de bebe",
   "segExtraSeco": 7,
@@ -246,11 +247,11 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 }
 ```
 
-#### 2) Consultar Perfil por ID - `GET /api/v1/perfis-mobilidade/6`
+#### 2) Consultar Perfil por ID - `GET /api/v1/perfis-mobilidade/11111111-1111-1111-1111-111111111106`
 **Response (`200 OK`):**
 ```json
 {
-  "idPerfil": 6,
+  "idPerfil": "11111111-1111-1111-1111-111111111106",
   "codigo": "GESTANTE_INFANTIL",
   "descricao": "Gestantes e responsaveis com carrinho de bebe",
   "segExtraSeco": 7,
@@ -258,7 +259,7 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 }
 ```
 
-#### 3) Atualizar Perfil de Mobilidade - `PUT /api/v1/perfis-mobilidade/6` (Requer Bearer Token `GESTOR`)
+#### 3) Atualizar Perfil de Mobilidade - `PUT /api/v1/perfis-mobilidade/11111111-1111-1111-1111-111111111106` (Requer Bearer Token `GESTOR`)
 **Request Body:**
 ```json
 {
@@ -272,7 +273,7 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 **Response (`200 OK`):**
 ```json
 {
-  "idPerfil": 6,
+  "idPerfil": "11111111-1111-1111-1111-111111111106",
   "codigo": "GESTANTE_INFANTIL",
   "descricao": "Gestantes, lactantes e responsaveis com bebe de colo",
   "segExtraSeco": 8,
@@ -280,7 +281,7 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 }
 ```
 
-#### 4) Remover Perfil de Mobilidade - `DELETE /api/v1/perfis-mobilidade/6` (Requer Bearer Token `GESTOR`)
+#### 4) Remover Perfil de Mobilidade - `DELETE /api/v1/perfis-mobilidade/11111111-1111-1111-1111-111111111106` (Requer Bearer Token `GESTOR`)
 **Response:** `204 No Content`
 
 ---
@@ -295,8 +296,8 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 **Request Body:**
 ```json
 {
-  "idUsuario": 2,
-  "idSemaforo": 1,
+  "idUsuario": "33333333-3333-3333-3333-333333333302",
+  "idSemaforo": "22222222-2222-2222-2222-222222222201",
   "chaveIdempotencia": "cloud-prod-travessia-2026-001",
   "distanciaSensorM": 1.80,
   "condicaoClima": "CHUVA_MODERADA",
@@ -307,9 +308,9 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 **Response (`201 Created` na 1a chamada com `X-Idempotent-Replayed: false` / `200 OK` com `X-Idempotent-Replayed: true` em chamadas subsequentes):**
 ```json
 {
-  "idAcionamento": 1,
-  "idUsuario": 2,
-  "idSemaforo": 1,
+  "idAcionamento": "44444444-4444-4444-4444-444444444401",
+  "idUsuario": "33333333-3333-3333-3333-333333333302",
+  "idSemaforo": "22222222-2222-2222-2222-222222222201",
   "chaveIdempotencia": "cloud-prod-travessia-2026-001",
   "dtHora": "2026-11-11T18:58:17.0514376Z",
   "distanciaSensorM": 1.80,
@@ -327,9 +328,9 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 ```json
 [
   {
-    "idAcionamento": 1,
-    "idUsuario": 2,
-    "idSemaforo": 1,
+    "idAcionamento": "44444444-4444-4444-4444-444444444401",
+    "idUsuario": "33333333-3333-3333-3333-333333333302",
+    "idSemaforo": "22222222-2222-2222-2222-222222222201",
     "chaveIdempotencia": "cloud-prod-travessia-2026-001",
     "dtHora": "2026-11-11T18:58:17.0514376Z",
     "distanciaSensorM": 1.80,
@@ -343,13 +344,13 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 ]
 ```
 
-#### 3) Consultar Acionamento por ID - `GET /api/v1/acionamentos/1` (Requer Bearer Token)
+#### 3) Consultar Acionamento por ID - `GET /api/v1/acionamentos/44444444-4444-4444-4444-444444444401` (Requer Bearer Token)
 **Response (`200 OK`):**
 ```json
 {
-  "idAcionamento": 1,
-  "idUsuario": 2,
-  "idSemaforo": 1,
+  "idAcionamento": "44444444-4444-4444-4444-444444444401",
+  "idUsuario": "33333333-3333-3333-3333-333333333302",
+  "idSemaforo": "22222222-2222-2222-2222-222222222201",
   "chaveIdempotencia": "cloud-prod-travessia-2026-001",
   "dtHora": "2026-11-11T18:58:17.0514376Z",
   "distanciaSensorM": 1.80,
@@ -362,7 +363,7 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 }
 ```
 
-#### 4) Remover Acionamento - `DELETE /api/v1/acionamentos/1` (Requer Bearer Token `GESTOR`)
+#### 4) Remover Acionamento - `DELETE /api/v1/acionamentos/44444444-4444-4444-4444-444444444401` (Requer Bearer Token `GESTOR`)
 **Response:** `204 No Content`
 
 ---
@@ -374,8 +375,8 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 ```json
 [
   {
-    "idAuditoria": 1,
-    "idSemaforo": 1,
+    "idAuditoria": "55555555-5555-5555-5555-555555555501",
+    "idSemaforo": "22222222-2222-2222-2222-222222222201",
     "operacao": "UPDATE",
     "campoAlterado": "tempo_base_seg",
     "valorAntigo": "15",
@@ -394,7 +395,7 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 **Request Body:**
 ```json
 {
-  "idPerfil": 2,
+  "idPerfil": "11111111-1111-1111-1111-111111111102",
   "nome": "Helena Souza Idosa",
   "email": "helena.idosa@cidadao.sp.gov.br",
   "senha": "Password123!",
@@ -409,20 +410,20 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 {
   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "expiresAtUtc": "2026-11-11T21:30:00Z",
-  "idUsuario": 4,
+  "idUsuario": "33333333-3333-3333-3333-333333333304",
   "nome": "Helena Souza Idosa",
   "email": "helena.idosa@cidadao.sp.gov.br",
   "role": "CIDADAO",
-  "idPerfil": 2
+  "idPerfil": "11111111-1111-1111-1111-111111111102"
 }
 ```
 
-#### 2) Consultar Usuario por ID - `GET /api/v1/usuarios/4` (Requer Bearer Token)
+#### 2) Consultar Usuario por ID - `GET /api/v1/usuarios/33333333-3333-3333-3333-333333333304` (Requer Bearer Token)
 **Response (`200 OK` - sem exposicao de `senha_hash`):**
 ```json
 {
-  "idUsuario": 4,
-  "idPerfil": 2,
+  "idUsuario": "33333333-3333-3333-3333-333333333304",
+  "idPerfil": "11111111-1111-1111-1111-111111111102",
   "codigoPerfil": "IDOSO",
   "nome": "Helena Souza Idosa",
   "email": "helena.idosa@cidadao.sp.gov.br",
@@ -433,11 +434,11 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 }
 ```
 
-#### 3) Atualizar Usuario - `PUT /api/v1/usuarios/4` (Requer Bearer Token)
+#### 3) Atualizar Usuario - `PUT /api/v1/usuarios/33333333-3333-3333-3333-333333333304` (Requer Bearer Token)
 **Request Body:**
 ```json
 {
-  "idPerfil": 3,
+  "idPerfil": "11111111-1111-1111-1111-111111111103",
   "nome": "Helena Souza Cadeirante",
   "email": "helena.idosa@cidadao.sp.gov.br",
   "role": "CIDADAO",
@@ -449,8 +450,8 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 **Response (`200 OK`):**
 ```json
 {
-  "idUsuario": 4,
-  "idPerfil": 3,
+  "idUsuario": "33333333-3333-3333-3333-333333333304",
+  "idPerfil": "11111111-1111-1111-1111-111111111103",
   "codigoPerfil": "CADEIRANTE",
   "nome": "Helena Souza Cadeirante",
   "email": "helena.idosa@cidadao.sp.gov.br",
@@ -461,7 +462,7 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 }
 ```
 
-#### 4) Remover Usuario - `DELETE /api/v1/usuarios/4` (Requer Bearer Token `GESTOR`)
+#### 4) Remover Usuario - `DELETE /api/v1/usuarios/33333333-3333-3333-3333-333333333304` (Requer Bearer Token `GESTOR`)
 **Response:** `204 No Content`
 
 ---

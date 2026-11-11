@@ -14,7 +14,7 @@ public sealed class UsuarioConfiguration : IEntityTypeConfiguration<Usuario>
 
         builder.Property(u => u.Id)
             .HasColumnName("id_usuario")
-            .ValueGeneratedOnAdd();
+            .ValueGeneratedNever();
 
         builder.Property(u => u.IdPerfil)
             .HasColumnName("id_perfil")

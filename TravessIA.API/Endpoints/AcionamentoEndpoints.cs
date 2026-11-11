@@ -20,7 +20,7 @@ public static class AcionamentoEndpoints
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
-        group.MapGet("/{id:int}", (int id, IAcionamentoService service) =>
+        group.MapGet("/{id:guid}", (Guid id, IAcionamentoService service) =>
             {
                 var response = service.GetById(id);
                 return response is not null
@@ -68,7 +68,7 @@ public static class AcionamentoEndpoints
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
-        group.MapPut("/{id:int}", (int id, AcionamentoRequest request, IAcionamentoService service) =>
+        group.MapPut("/{id:guid}", (Guid id, AcionamentoRequest request, IAcionamentoService service) =>
             {
                 var updated = service.Update(id, request);
                 return updated is not null
@@ -90,7 +90,7 @@ public static class AcionamentoEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
-        group.MapDelete("/{id:int}", (int id, IAcionamentoService service) =>
+        group.MapDelete("/{id:guid}", (Guid id, IAcionamentoService service) =>
             {
                 var deleted = service.Delete(id);
                 return deleted

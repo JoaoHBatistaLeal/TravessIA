@@ -6,7 +6,7 @@ namespace TravessIA.Application.DTOs.Semaforos;
 [Description("Representacao de um semaforo inteligente cadastrado em TB_SEMAFORO.")]
 public sealed record SemaforoResponse(
     [property: Description("Identificador unico do semaforo (id_semaforo).")]
-    int IdSemaforo,
+    Guid IdSemaforo,
 
     [property: Description("Codigo unico do beacon IoT (codigo_beacon).")]
     string CodigoBeacon,

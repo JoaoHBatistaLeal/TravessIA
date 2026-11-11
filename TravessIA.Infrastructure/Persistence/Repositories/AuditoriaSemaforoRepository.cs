@@ -13,12 +13,12 @@ public sealed class AuditoriaSemaforoRepository(TravessIAContext context) : IAud
             .ThenByDescending(a => a.Id)
             .ToList();
 
-    public AuditoriaSemaforo? GetById(int id) =>
+    public AuditoriaSemaforo? GetById(Guid id) =>
         context.AuditoriasSemaforo
             .AsNoTracking()
             .FirstOrDefault(a => a.Id == id);
 
-    public IReadOnlyList<AuditoriaSemaforo> GetBySemaforoId(int idSemaforo) =>
+    public IReadOnlyList<AuditoriaSemaforo> GetBySemaforoId(Guid idSemaforo) =>
         context.AuditoriasSemaforo
             .AsNoTracking()
             .Where(a => a.IdSemaforo == idSemaforo)

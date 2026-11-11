@@ -4,7 +4,7 @@ namespace TravessIA.Domain.Entities;
 
 public class PerfilMobilidade
 {
-    public int Id { get; private set; }
+    public Guid Id { get; private set; }
 
     public string Codigo { get; private set; } = string.Empty;
 
@@ -20,8 +20,14 @@ public class PerfilMobilidade
     {
     }
 
-    public PerfilMobilidade(string codigo, string descricao, int segExtraSeco, int segExtraChuva)
+    public PerfilMobilidade(
+        string codigo,
+        string descricao,
+        int segExtraSeco,
+        int segExtraChuva,
+        Guid? id = null)
     {
+        Id = id.HasValue && id.Value != Guid.Empty ? id.Value : Guid.NewGuid();
         Update(codigo, descricao, segExtraSeco, segExtraChuva);
     }
 

@@ -6,13 +6,13 @@ namespace TravessIA.Application.DTOs.Acionamentos;
 [Description("Resultado do acionamento inteligente de semaforo registrado em TB_ACIONAMENTO.")]
 public sealed record AcionamentoResponse(
     [property: Description("Identificador unico do acionamento (id_acionamento).")]
-    int IdAcionamento,
+    Guid IdAcionamento,
 
     [property: Description("Identificador do usuario solicitante (id_usuario).")]
-    int IdUsuario,
+    Guid IdUsuario,
 
     [property: Description("Identificador do semaforo acionado (id_semaforo).")]
-    int IdSemaforo,
+    Guid IdSemaforo,
 
     [property: Description("Chave unica de idempotencia da requisicao (chave_idempotencia).")]
     string ChaveIdempotencia,

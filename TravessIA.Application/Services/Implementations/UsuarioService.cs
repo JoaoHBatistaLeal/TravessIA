@@ -12,7 +12,7 @@ public sealed class UsuarioService(
     public IReadOnlyList<UsuarioResponse> GetAll() =>
         usuarioRepository.GetAll().Select(UsuarioResponse.FromDomain).ToList();
 
-    public UsuarioResponse? GetById(int id)
+    public UsuarioResponse? GetById(Guid id)
     {
         var entity = usuarioRepository.GetById(id);
         return entity is null ? null : UsuarioResponse.FromDomain(entity);
@@ -38,7 +38,7 @@ public sealed class UsuarioService(
         return UsuarioResponse.FromDomain(entity);
     }
 
-    public UsuarioResponse? Update(int id, UsuarioUpdateRequest request)
+    public UsuarioResponse? Update(Guid id, UsuarioUpdateRequest request)
     {
         var entity = usuarioRepository.GetById(id);
         if (entity is null)
@@ -67,5 +67,5 @@ public sealed class UsuarioService(
         return UsuarioResponse.FromDomain(entity);
     }
 
-    public bool Delete(int id) => usuarioRepository.Delete(id);
+    public bool Delete(Guid id) => usuarioRepository.Delete(id);
 }

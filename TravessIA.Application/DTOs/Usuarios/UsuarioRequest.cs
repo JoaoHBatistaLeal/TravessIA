@@ -6,7 +6,7 @@ namespace TravessIA.Application.DTOs.Usuarios;
 [Description("Payload para criacao de usuario em TB_USUARIO.")]
 public sealed record UsuarioRequest(
     [property: Description("Chave estrangeira do perfil de mobilidade (id_perfil).")]
-    int IdPerfil,
+    Guid IdPerfil,
 
     [property: Description("Nome completo do usuario (maximo 120 caracteres).")]
     string Nome,
