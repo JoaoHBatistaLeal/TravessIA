@@ -105,7 +105,13 @@ public class TravessIAIntegrationTests
 
         var checks = doc.RootElement.GetProperty("checks").EnumerateArray().ToList();
         Assert.Contains(checks, c =>
+            c.GetProperty("name").GetString() == "api-self" &&
+            c.GetProperty("status").GetString() == "Healthy");
+        Assert.Contains(checks, c =>
             c.GetProperty("name").GetString() == "database" &&
+            c.GetProperty("status").GetString() == "Healthy");
+        Assert.Contains(checks, c =>
+            c.GetProperty("name").GetString() == "external-weather-and-keyvault" &&
             c.GetProperty("status").GetString() == "Healthy");
     }
 
@@ -265,6 +271,16 @@ public class TravessIAIntegrationTests
         var updatedUsuario = await updateUsuarioRes.Content.ReadFromJsonAsync<UsuarioResponse>();
         Assert.NotNull(updatedUsuario);
         Assert.Equal("Ana Paula Atualizada", updatedUsuario.Nome);
+
+        var lgpdNoUpdateReq = new UsuarioUpdateRequest(
+            createdPerfil.IdPerfil,
+            "Ana Paula Sem LGPD",
+            createdUsuario.Email,
+            Usuario.RoleCidadao,
+            1992,
+            "N");
+        var lgpdNoUpdateRes = await client.PutAsJsonAsync($"/api/v1/usuarios/{createdUsuario.IdUsuario}", lgpdNoUpdateReq);
+        Assert.Equal(HttpStatusCode.BadRequest, lgpdNoUpdateRes.StatusCode);
 
         var createSemaforoReq = new SemaforoRequest(
             "BEACON-CRUD-100",
