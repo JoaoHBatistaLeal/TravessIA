@@ -121,13 +121,13 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 #### Response (`200 OK`)
 ```json
 {
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "expiraEm": "2026-11-11T20:30:00Z",
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "expiresAtUtc": "2026-11-11T20:56:41Z",
   "idUsuario": 1,
-  "nome": "Gestor Municipal CET",
+  "nome": "Gestor CET Sao Paulo",
   "email": "gestor@travessia.sp.gov.br",
   "role": "GESTOR",
-  "codigoPerfil": "PADRAO"
+  "idPerfil": 1
 }
 ```
 
@@ -287,42 +287,103 @@ O banco de dados relacional implementa fielmente as 5 tabelas do diagrama entida
 
 ### 6.4. CRUD Tabela 3: `TB_ACIONAMENTO` (`/api/v1/acionamentos`) com `Idempotency-Key`
 
-#### 1) Solicitar Travessia Inteligente - `POST /api/v1/acionamentos`
+#### 1) Solicitar Travessia Inteligente - `POST /api/v1/acionamentos` (Requer Bearer Token `CIDADAO` ou `GESTOR`)
 **Headers:**
 - `Authorization: Bearer <token>`
-- `Idempotency-Key: travessia-paulista-20261111-001`
+- `Idempotency-Key: cloud-prod-travessia-2026-001`
 
 **Request Body:**
 ```json
 {
   "idUsuario": 2,
   "idSemaforo": 1,
-  "chaveIdempotencia": "travessia-paulista-20261111-001",
-  "distanciaSensorM": 2.40,
+  "chaveIdempotencia": "cloud-prod-travessia-2026-001",
+  "distanciaSensorM": 1.80,
   "condicaoClima": "CHUVA_MODERADA",
   "intensidadeChuvaMm": 14.50
 }
 ```
 
-**Response (`201 Created` na 1a chamada / `200 OK` com `X-Idempotent-Replayed: true` em chamadas subsequentes):**
+**Response (`201 Created` na 1a chamada com `X-Idempotent-Replayed: false` / `200 OK` com `X-Idempotent-Replayed: true` em chamadas subsequentes):**
 ```json
 {
   "idAcionamento": 1,
   "idUsuario": 2,
-  "nomeUsuario": "Maria Helena Cidada",
-  "codigoPerfil": "IDOSO",
   "idSemaforo": 1,
-  "codigoBeacon": "BEACON-PAULISTA-1106",
-  "chaveIdempotencia": "travessia-paulista-20261111-001",
-  "dtHora": "2026-11-11T18:35:00Z",
-  "distanciaSensorM": 2.40,
+  "chaveIdempotencia": "cloud-prod-travessia-2026-001",
+  "dtHora": "2026-11-11T18:58:17.0514376Z",
+  "distanciaSensorM": 1.80,
   "condicaoClima": "CHUVA_MODERADA",
   "intensidadeChuvaMm": 14.50,
-  "tempoBaseSeg": 22,
-  "tempoExtraSeg": 24,
-  "tempoTotalTravessiaSeg": 46,
-  "justificativaIa": "Perfil IDOSO validado com consentimento LGPD ativo a 2.40m do sensor BEACON-PAULISTA-1106. Clima CHUVA_MODERADA (14.50mm) em via de 18.50m: aplicados 14s do perfil em piso molhado + 10s de fator geomtrico da via + 0s de alerta severo, totalizando 24s extras (tempo total de travessia: 46s)."
+  "tempoExtraSeg": 22,
+  "tempoBaseSeg": 16,
+  "tempoTotalSeg": 38,
+  "justificativaIa": "TravessIA Decision Engine: Perfil=IDOSO (+12s) | Clima=CHUVA_MODERADA (14.50mm) | LarguraVia=18.50m (+10s) | BonusTempestade=+0s | TempoBase=16s | TempoExtraConcedido=22s | TempoTotalTravessia=38s."
 }
+```
+
+#### 2) Listar Acionamentos - `GET /api/v1/acionamentos` (Requer Bearer Token)
+**Response (`200 OK`):**
+```json
+[
+  {
+    "idAcionamento": 1,
+    "idUsuario": 2,
+    "idSemaforo": 1,
+    "chaveIdempotencia": "cloud-prod-travessia-2026-001",
+    "dtHora": "2026-11-11T18:58:17.0514376Z",
+    "distanciaSensorM": 1.80,
+    "condicaoClima": "CHUVA_MODERADA",
+    "intensidadeChuvaMm": 14.50,
+    "tempoExtraSeg": 22,
+    "tempoBaseSeg": 16,
+    "tempoTotalSeg": 38,
+    "justificativaIa": "TravessIA Decision Engine: Perfil=IDOSO (+12s) | Clima=CHUVA_MODERADA (14.50mm) | LarguraVia=18.50m (+10s) | BonusTempestade=+0s | TempoBase=16s | TempoExtraConcedido=22s | TempoTotalTravessia=38s."
+  }
+]
+```
+
+#### 3) Consultar Acionamento por ID - `GET /api/v1/acionamentos/1` (Requer Bearer Token)
+**Response (`200 OK`):**
+```json
+{
+  "idAcionamento": 1,
+  "idUsuario": 2,
+  "idSemaforo": 1,
+  "chaveIdempotencia": "cloud-prod-travessia-2026-001",
+  "dtHora": "2026-11-11T18:58:17.0514376Z",
+  "distanciaSensorM": 1.80,
+  "condicaoClima": "CHUVA_MODERADA",
+  "intensidadeChuvaMm": 14.50,
+  "tempoExtraSeg": 22,
+  "tempoBaseSeg": 16,
+  "tempoTotalSeg": 38,
+  "justificativaIa": "TravessIA Decision Engine: Perfil=IDOSO (+12s) | Clima=CHUVA_MODERADA (14.50mm) | LarguraVia=18.50m (+10s) | BonusTempestade=+0s | TempoBase=16s | TempoExtraConcedido=22s | TempoTotalTravessia=38s."
+}
+```
+
+#### 4) Remover Acionamento - `DELETE /api/v1/acionamentos/1` (Requer Bearer Token `GESTOR`)
+**Response:** `204 No Content`
+
+---
+
+### 6.5. Consulta Tabela 5: `TB_AUDITORIA_SEMAFORO` (`/api/v1/auditorias`)
+
+#### Listar Registros de Auditoria - `GET /api/v1/auditorias` (Requer Bearer Token `GESTOR`)
+**Response (`200 OK`):**
+```json
+[
+  {
+    "idAuditoria": 1,
+    "idSemaforo": 1,
+    "operacao": "UPDATE",
+    "campoAlterado": "tempo_base_seg",
+    "valorAntigo": "15",
+    "valorNovo": "16",
+    "usuarioBd": "gestor@travessia.sp.gov.br",
+    "dtOperacao": "2026-11-11T18:58:16.8976937Z"
+  }
+]
 ```
 
 ---
