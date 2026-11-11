@@ -19,48 +19,22 @@ O **TravessIA** integra sensores fisicos de proximidade na calcada (Beacons BLE/
 
 ## 2. Integrantes do Grupo (2TDSPG - FIAP)
 
-| Nome Completo | RM | E-mail Institucional |
+| Nome Completo | RM | Turma |
 |---|---|---|
-| Joao Henrique Batista Leal | RM564361 | RM564361@fiap.com.br |
-| Erik Naoki Miyasato | RM565771 | RM565771@fiap.com.br |
-| Juliana da Silva Stigliani | RM561171 | RM561171@fiap.com.br |
-| Gutemberg Rocha Silva | RM562267 | RM562267@fiap.com.br |
-| Gustavo Arthur Carvalho Sartori | RM561650 | RM561650@fiap.com.br |
+| Joao Henrique Batista Leal | RM564361 | 2TDSPG |
+| Erik Naoki Miyasato | RM565771 | 2TDSPG |
+| Juliana da Silva Stigliani | RM561171 | 2TDSPG |
+| Gutemberg Rocha Silva | RM562267 | 2TDSPG |
+| Gustavo Arthur Carvalho Sartori | RM561650 | 2TDSPG |
 
 ---
 
 ## 3. Arquitetura Macro da Solucao (Cloud Azure, Key Vault e CI/CD)
 
-```mermaid
-flowchart LR
-    subgraph ClientLayer["Camada Cliente e IoT"]
-        Mobile["App Mobile Cidadao / Painel Gestor"]
-        Beacon["Sensor Calcada Beacon BLE (0.1m a 5.0m)"]
-    end
-
-    subgraph AzureCloud["Microsoft Azure Cloud (rg-travessia-gs2026 - brazilsouth)"]
-        WebApp["Azure App Service Linux (SKU F1 Free)\nwebapp-travessia-rm564361\nASP.NET Core 10 Minimal API"]
-        KeyVault["Azure Key Vault (Standard RBAC)\nkv-travessia-564361\nDefaultAzureCredential / Managed Identity"]
-        SqlDb["Azure SQL Database (sqldb-travessia)\nsql-travessia-rm564361\n5 Tabelas Relacionais ERD"]
-    end
-
-    subgraph DevOpsGovernance["Azure DevOps (OrgJJEGG / TravessIA)"]
-        Boards["Azure Boards (Scrum)\nEpics, Features, PBIs, Tasks (Sprint 1)"]
-        Repos["Azure Repos + GitHub\nBranch Policy on main + PR Review"]
-        Pipelines["Azure Pipelines (azure-pipeline.yml)\nStage 1: Build + xUnit Test + PublishTestResults\nStage 2: Release CD to Azure Web App"]
-    end
-
-    Beacon -->|"Proximidade 0.1m-5.0m"| Mobile
-    Mobile -->|"HTTPS + JWT Bearer + Idempotency-Key"| WebApp
-    WebApp -->|"System-Assigned Managed Identity"| KeyVault
-    WebApp -->|"EF Core 9 / T-SQL"| SqlDb
-    Boards -->|"Work Item Linking"| Repos
-    Repos -->|"Trigger on PR Merge to main"| Pipelines
-    Pipelines -->|"Continuous Deployment (drop.zip)"| WebApp
-```
+![Arquitetura Macro da Solucao - TravessIA](docs/arquitetura-travessia.png)
 
 ### Componentes de Infraestrutura Provisionados na Nuvem (Azure)
-- **Assinatura Azure**: `2026-2TDSPJ-JOAO-H-BATISTA-LEAL-RM564361`
+- **Assinatura Azure**: `Azure for Students - FIAP 2TDSPG (RM564361)`
 - **Resource Group**: `rg-travessia-gs2026` (`brazilsouth`)
 - **App Service Plan**: `plan-travessia-free` (`F1` Free Tier, Linux)
 - **Azure Web App**: `webapp-travessia-rm564361` (`https://webapp-travessia-rm564361.azurewebsites.net`) com **System-Assigned Managed Identity**
