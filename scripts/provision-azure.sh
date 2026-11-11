@@ -4,15 +4,16 @@ set -euo pipefail
 SUBSCRIPTION_NAME="${AZURE_SUBSCRIPTION:-2026-2TDSPJ-JOAO-H-BATISTA-LEAL-RM564361}"
 RESOURCE_GROUP="${RESOURCE_GROUP:-rg-travessia-gs2026}"
 LOCATION="${LOCATION:-brazilsouth}"
-SQL_LOCATION="${SQL_LOCATION:-eastus2}"
+SQL_LOCATION="${SQL_LOCATION:-brazilsouth}"
 APP_SERVICE_PLAN="${APP_SERVICE_PLAN:-plan-travessia-free}"
 WEBAPP_NAME="${WEBAPP_NAME:-webapp-travessia-rm564361}"
 SQL_SERVER_NAME="${SQL_SERVER_NAME:-sql-travessia-rm564361}"
 SQL_DB_NAME="${SQL_DB_NAME:-sqldb-travessia}"
-SQL_ADMIN_USER="${SQL_ADMIN_USER:-travessiaadmin}"
+SQL_ADMIN_USER="${SQL_ADMIN_USER:-sqladmin_travessia}"
 KEYVAULT_NAME="${KEYVAULT_NAME:-kv-travessia-564361}"
 
 : "${SQL_ADMIN_PASSWORD:?Environment variable SQL_ADMIN_PASSWORD is required}"
+: "${SQL_CONNECTION_STRING:?Environment variable SQL_CONNECTION_STRING is required}"
 : "${JWT_SECRET_KEY:?Environment variable JWT_SECRET_KEY is required}"
 
 az account set --subscription "$SUBSCRIPTION_NAME"
@@ -120,8 +121,6 @@ az role assignment create \
   --assignee-principal-type ServicePrincipal \
   --scope "$KEYVAULT_ID" \
   --output none
-
-SQL_CONNECTION_STRING="Server=tcp:${SQL_SERVER_NAME}.database.windows.net,1433;Initial Catalog=${SQL_DB_NAME};Persist Security Info=False;User ID=${SQL_ADMIN_USER};Password=${SQL_ADMIN_PASSWORD};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
 
 az keyvault secret set \
   --vault-name "$KEYVAULT_NAME" \
