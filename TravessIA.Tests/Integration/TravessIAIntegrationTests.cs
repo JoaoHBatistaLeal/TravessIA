@@ -126,7 +126,7 @@ public class TravessIAIntegrationTests
         Assert.Equal(HttpStatusCode.OK, jsonResponse.StatusCode);
 
         var swaggerJson = await jsonResponse.Content.ReadAsStringAsync();
-        Assert.Contains("TravessIA CitizenTech API", swaggerJson);
+        Assert.Contains("TravessIA", swaggerJson);
         Assert.Contains("\"format\": \"uuid\"", swaggerJson);
         Assert.Contains("maria.cidada@travessia.com.br", swaggerJson);
         Assert.Contains("gestor@travessia.com.br", swaggerJson);

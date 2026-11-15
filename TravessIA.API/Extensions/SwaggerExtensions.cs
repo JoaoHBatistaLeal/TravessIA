@@ -20,9 +20,9 @@ public static class SwaggerExtensions
         {
             options.SwaggerDoc("v1", new OpenApiInfo
             {
-                Title = "TravessIA CitizenTech API",
+                Title = "TravessIA API",
                 Version = "v1",
-                Description = "API Minimalista em .NET 10 para gestao de semaforos inteligentes adaptativos, perfis de mobilidade prioritaria, telemetria climatica, idempotencia e auditoria."
+                Description = "Documentação de Endpoints da API da TravessIA."
             });
 
             options.SchemaFilter<DescriptionSchemaFilter>();
