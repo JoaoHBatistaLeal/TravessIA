@@ -1,7 +1,8 @@
 # TravessIA API
 
-API RESTful corporativa construida com **Minimal APIs em .NET 10.0**, **Clean Architecture**, **Entity Framework Core 9 (`UNIQUEIDENTIFIER` / `Guid`)**, autenticacao e autorizacao **JWT RBAC** (`CIDADAO` e `GESTOR`), **Idempotencia** (`Idempotency-Key` + `X-Idempotent-Replayed`), **Rate Limiting** com `FixedWindowLimiter` (`HTTP 429`), **Health Check em 3 camadas** (`/health`), integracao nativa com **Azure Key Vault** (`DefaultAzureCredential`) e **35 testes automatizados xUnit** (`27` unitarios + `8` de integracao).
+API RESTful corporativa construida com **Minimal APIs em .NET 10.0**, **Clean Architecture**, **Entity Framework Core 9** com chaves `UNIQUEIDENTIFIER`, autenticacao e autorizacao **JWT RBAC** para os perfis `CIDADAO` e `GESTOR`, **Idempotencia** via header `Idempotency-Key` com resposta `X-Idempotent-Replayed`, **Rate Limiting** com `FixedWindowLimiter` retornando `HTTP 429`, **Health Check em 3 camadas** em `/health`, integracao nativa com **Azure Key Vault** via `DefaultAzureCredential` e **35 testes automatizados xUnit** — 27 unitarios e 8 de integracao.
 
+**Disciplina:** Advanced Business Development with .NET — Global Solution 2026/2  
 **Turma:** 2TDSPG  
 **Repositorio:** `https://github.com/JoaoHBatistaLeal/TravessIA`  
 **URL Base em Producao:** `https://webapp-travessia-rm564361.azurewebsites.net`  
@@ -23,9 +24,9 @@ API RESTful corporativa construida com **Minimal APIs em .NET 10.0**, **Clean Ar
 ## 2. Visao Geral da Solucao CitizenTech e Beneficios para o Negocio
 
 ### Problema Urbano e Solucao Proposta
-Nos grandes centros urbanos, a temporizacao semaforica tradicional utiliza como referencia a velocidade media de caminhada de um adulto sem limitacoes fisicas (`1,2 m/s`) em pista seca. Essa premissa compromete a seguranca de idosos, cadeirantes, pessoas com deficiencia visual e cidadaos com mobilidade reduzida em travessias largas e durante chuvas intensas.
+Nos grandes centros urbanos, a temporizacao semaforica tradicional utiliza como referencia a velocidade media de `1,2 m/s` de um adulto sem limitacoes fisicas em pista seca. Essa premissa compromete a seguranca de idosos, cadeirantes, pessoas com deficiencia visual e cidadaos com mobilidade reduzida em travessias largas e durante chuvas intensas.
 
-O **TravessIA** atua como camada de inteligencia viaria: sensores de proximidade instalados na calcada validam a presenca real do pedestre no intervalo fisico de **`0.1m` a `5.0m`**, consultam seu perfil de mobilidade cadastrado mediante **consentimento expresso LGPD (`'S'`)** e combinam a largura da via (`largura_via_m`) com telemetria climatica (`SECO`, `CHUVA_MODERADA`, `TEMPESTADE`) para estender dinamicamente o tempo de travessia segura e gerar uma justificativa auditavel (`justificativa_ia`).
+O **TravessIA** atua como camada de inteligencia viaria: sensores de proximidade instalados na calcada validam a presenca real do pedestre no intervalo fisico de **`0.1m` a `5.0m`**, consultam seu perfil de mobilidade cadastrado mediante **consentimento expresso LGPD `'S'`** e combinam a largura da via `largura_via_m` com a telemetria climatica entre `SECO`, `CHUVA_MODERADA` e `TEMPESTADE` para estender dinamicamente o tempo de travessia segura e gerar uma justificativa auditavel no campo `justificativa_ia`.
 
 ### Stack Tecnologica
 
@@ -40,36 +41,38 @@ O **TravessIA** atua como camada de inteligencia viaria: sensores de proximidade
 
 ## 3. Estrutura da Clean Architecture, SOLID e Modelagem Relacional (5 Tabelas ERD)
 
-### Camadas da Solucao (`TravessIA.sln`)
-- **`TravessIA.Domain`**: Entidades ricas (`PerfilMobilidade`, `Usuario`, `Semaforo`, `Acionamento`, `AuditoriaSemaforo`), invariantes de negocio (`AplicarRegrasDeTravessia`, `CalcularExtensaoInteligente`, `EnsureLgpdConsent`), excecao `DomainException` e `HashHelper` (`BCrypt`). Zero dependencias externas de infraestrutura.
-- **`TravessIA.Application`**: Contratos de repositorios (`I*Repository`), interfaces e implementacoes de servicos (`I*Service`), geracao de tokens (`JwtTokenIssuer`) e DTOs imutaveis (`record`) com metadados `[Description]` para OpenAPI.
-- **`TravessIA.Infrastructure`**: `TravessIAContext`, mapeamentos Fluent API (`IEntityTypeConfiguration<T>` com `.ValueGeneratedOnAdd().HasDefaultValueSql("NEWID()")`), `TravessIASeeder` e repositorios concretos EF Core.
-- **`TravessIA.API`**: Ponto de composicao (`Program.cs`), extensoes de DI e Swagger (`SwaggerExtensions`, `TravessIAServiceCollectionExtensions`), tratamento global `GlobalExceptionHandler` (RFC 7807 `ProblemDetails`), Rate Limiter, Health Checks (`HealthCheckResponseWriter`, `ExternalWeatherAndKeyVaultHealthCheck`) e 6 modulos Minimal API (`/api/v1/*`).
-- **`TravessIA.Tests`**: Projeto de testes com `CrosswalkDomainTests` (`27` casos unitarios) e `TravessIAIntegrationTests` (`8` cenarios integrados com `WebApplicationFactory<Program>`).
+### Camadas da Solucao
+- **`TravessIA.Domain`**: Entidades ricas `PerfilMobilidade`, `Usuario`, `Semaforo`, `Acionamento` e `AuditoriaSemaforo`, invariantes de negocio em `AplicarRegrasDeTravessia`, `CalcularExtensaoInteligente` e `EnsureLgpdConsent`, excecao `DomainException` e `HashHelper` com `BCrypt`. Zero dependencias externas de infraestrutura.
+- **`TravessIA.Application`**: Contratos de repositorios `I*Repository`, interfaces e implementacoes de servicos `I*Service`, geracao de tokens `JwtTokenIssuer` e DTOs imutaveis `record` com metadados `[Description]` para OpenAPI.
+- **`TravessIA.Infrastructure`**: `TravessIAContext`, mapeamentos Fluent API via `IEntityTypeConfiguration<T>` com `.ValueGeneratedOnAdd().HasDefaultValueSql("NEWID()")`, `TravessIASeeder` e repositorios concretos EF Core.
+- **`TravessIA.API`**: Ponto de composicao `Program.cs`, extensoes `SwaggerExtensions` e `TravessIAServiceCollectionExtensions`, tratamento global `GlobalExceptionHandler` em padrao RFC 7807 `ProblemDetails`, Rate Limiter, Health Checks com `HealthCheckResponseWriter` e `ExternalWeatherAndKeyVaultHealthCheck`, alem de 6 modulos Minimal API sob `/api/v1/*`.
+- **`TravessIA.Tests`**: Projeto de testes xUnit composto por `CrosswalkDomainTests` com `27` casos unitarios e `TravessIAIntegrationTests` com `8` cenarios integrados em `WebApplicationFactory<Program>`.
 
 ### Principios SOLID Aplicados
-- **Single Responsibility (SRP)**: Cada modulo `*Endpoints.cs`, `*Service.cs` e `*Repository.cs` possui responsabilidade unica; regras de calculo climatico residem exclusivamente em `Acionamento`.
-- **Open/Closed (OCP)**: Novos perfis de mobilidade e mapeamentos de excecoes no `GlobalExceptionHandler` sao adicionados sem alterar fluxos existentes.
-- **Liskov Substitution (LSP) & Interface Segregation (ISP)**: Interfaces especificas por agregado (`IPerfilMobilidadeRepository`, `IUsuarioRepository`, `ISemaforoRepository`, `IAcionamentoRepository`, `IAuditoriaSemaforoRepository`) substituiveis entre SQL Server, SQLite e InMemory.
-- **Dependency Inversion (DIP)**: `TravessIA.API` e `TravessIA.Application` dependem apenas de abstracoes (`I*Repository`, `I*Service`), injetadas via DI container.
+- **Single Responsibility — SRP**: Cada modulo `*Endpoints.cs`, `*Service.cs` e `*Repository.cs` possui responsabilidade unica; regras de calculo climatico residem exclusivamente em `Acionamento`.
+- **Open/Closed — OCP**: Novos perfis de mobilidade e mapeamentos de excecoes no `GlobalExceptionHandler` sao adicionados sem alterar fluxos existentes.
+- **Liskov Substitution e Interface Segregation — LSP e ISP**: Interfaces especificas por agregado sao substituiveis entre SQL Server, SQLite e provedor InMemory.
+- **Dependency Inversion — DIP**: `TravessIA.API` e `TravessIA.Application` dependem apenas de abstracoes de servicos e repositorios injetadas via container de DI.
 
-### Modelagem Relacional (5 Tabelas ERD - `/scripts/script-bd.sql`)
-1. **`TB_PERFIL_MOBILIDADE`**: `id_perfil` (PK `UNIQUEIDENTIFIER`), `codigo` (UK), `descricao`, `seg_extra_seco`, `seg_extra_chuva`. Seed inicial: `PADRAO`, `IDOSO`, `CADEIRANTE`, `DEFICIENCIA_VISUAL`, `MOBILIDADE_REDUZIDA`.
-2. **`TB_USUARIO`**: `id_usuario` (PK `UNIQUEIDENTIFIER`), `id_perfil` (FK), `nome`, `email` (UK), `senha_hash` (BCrypt), `role` (`CIDADAO`/`GESTOR`), `ano_nascimento`, `consentimento_lgpd` (`S`/`N`), `dt_cadastro`.
-3. **`TB_SEMAFORO`**: `id_semaforo` (PK `UNIQUEIDENTIFIER`), `codigo_beacon` (UK), `endereco`, `latitude`, `longitude`, `largura_via_m`, `tempo_base_seg`, `status_operacional` (`ATIVO`/`MANUTENCAO`/`MODO_CHUVA`). Seed inicial: `BEACON-SP-001`, `BEACON-SP-002`, `BEACON-SP-003`.
-4. **`TB_ACIONAMENTO`**: `id_acionamento` (PK `UNIQUEIDENTIFIER`), `id_usuario` (FK), `id_semaforo` (FK), `chave_idempotencia` (UK), `dt_hora`, `distancia_sensor_m` (`0.1` a `5.0`), `condicao_clima` (`SECO`/`CHUVA_MODERADA`/`TEMPESTADE`), `intensidade_chuva_mm`, `tempo_extra_seg`, `justificativa_ia`.
-5. **`TB_AUDITORIA_SEMAFORO`**: `id_auditoria` (PK `UNIQUEIDENTIFIER`), `id_semaforo` (`UNIQUEIDENTIFIER` **sem FK**), `operacao` (`INSERT`/`UPDATE`/`DELETE`), `campo_alterado`, `valor_antigo`, `valor_novo`, `usuario_bd`, `dt_operacao`.
+### Modelagem Relacional em 5 Tabelas ERD
+Schema definido em `/scripts/script-bd.sql`:
+
+1. **`TB_PERFIL_MOBILIDADE`**: `id_perfil` como PK `UNIQUEIDENTIFIER`, `codigo` como UK, `descricao`, `seg_extra_seco`, `seg_extra_chuva`. Seed inicial: `PADRAO`, `IDOSO`, `CADEIRANTE`, `DEFICIENCIA_VISUAL`, `MOBILIDADE_REDUZIDA`.
+2. **`TB_USUARIO`**: `id_usuario` como PK `UNIQUEIDENTIFIER`, `id_perfil` como FK, `nome`, `email` como UK, `senha_hash` em BCrypt, `role` entre `CIDADAO` ou `GESTOR`, `ano_nascimento`, `consentimento_lgpd` como `S` ou `N`, `dt_cadastro`.
+3. **`TB_SEMAFORO`**: `id_semaforo` como PK `UNIQUEIDENTIFIER`, `codigo_beacon` como UK, `endereco`, `latitude`, `longitude`, `largura_via_m`, `tempo_base_seg`, `status_operacional` entre `ATIVO`, `MANUTENCAO` ou `MODO_CHUVA`. Seed inicial: `BEACON-SP-001`, `BEACON-SP-002`, `BEACON-SP-003`.
+4. **`TB_ACIONAMENTO`**: `id_acionamento` como PK `UNIQUEIDENTIFIER`, `id_usuario` e `id_semaforo` como FKs, `chave_idempotencia` como UK, `dt_hora`, `distancia_sensor_m` entre `0.1` e `5.0`, `condicao_clima` entre `SECO`, `CHUVA_MODERADA` ou `TEMPESTADE`, `intensidade_chuva_mm`, `tempo_extra_seg`, `justificativa_ia`.
+5. **`TB_AUDITORIA_SEMAFORO`**: `id_auditoria` como PK `UNIQUEIDENTIFIER`, `id_semaforo` como `UNIQUEIDENTIFIER` **sem FK**, `operacao` entre `INSERT`, `UPDATE` ou `DELETE`, `campo_alterado`, `valor_antigo`, `valor_novo`, `usuario_bd`, `dt_operacao`.
 
 ---
 
 ## 4. Documentacao dos Endpoints
 
-Todos os endpoints de `/api/v1/*` utilizam a politica de Rate Limiting `"fixed"` e metadados fluentes OpenAPI (`.WithName()`, `.WithTags()`, `.WithSummary()`, `.WithDescription()`, `.Produces<T>()`, `.ProducesProblem()`).
+Todos os endpoints de `/api/v1/*` utilizam a politica de Rate Limiting `"fixed"` e metadados fluentes OpenAPI via `.WithName()`, `.WithTags()`, `.WithSummary()`, `.WithDescription()`, `.Produces<T>()` e `.ProducesProblem()`.
 
 | Metodo | Rota | Descricao Funcional | Autorizacao |
 |---|---|---|---|
-| `GET` | `/health` | Verifica saude em 3 camadas (`api-self`, `database`, `external-weather-and-keyvault`) | Anonimo |
-| `GET` | `/swagger/index.html` | Interface interativa Swagger UI (ativa em Development e Production) | Anonimo |
+| `GET` | `/health` | Verifica saude nas 3 camadas: `api-self`, `database` e `external-weather-and-keyvault` | Anonimo |
+| `GET` | `/swagger/index.html` | Interface interativa Swagger UI ativa em Development e Production | Anonimo |
 | `GET` | `/swagger/v1/swagger.json` | Especificacao OpenAPI 3.0 em formato JSON | Anonimo |
 | `POST` | `/api/v1/auth/login` | Autentica email/senha (BCrypt) e emite token Bearer JWT | Anonimo |
 | `POST` | `/api/v1/auth/register` | Auto-cadastro de usuario com resolucao automatica de `id_perfil` e emissao de JWT | Anonimo |
@@ -96,16 +99,24 @@ Todos os endpoints de `/api/v1/*` utilizam a politica de Rate Limiting `"fixed"`
 | `DELETE` | `/api/v1/acionamentos/{id:guid}` | Remove registro de `TB_ACIONAMENTO` por `id_acionamento` | Bearer JWT - `GESTOR` |
 | `GET` | `/api/v1/auditorias` | Lista toda a trilha imutavel de `TB_AUDITORIA_SEMAFORO` | Bearer JWT - `GESTOR` |
 | `GET` | `/api/v1/auditorias/{id:guid}` | Consulta registro especifico de auditoria pelo `id_auditoria` | Bearer JWT - `GESTOR` |
-| `GET` | `/api/v1/auditorias/semaforo/{idSemaforo:guid}` | Lista historico `INSERT`/`UPDATE`/`DELETE` por `id_semaforo` (mesmo apos exclusao) | Bearer JWT - `GESTOR` |
+| `GET` | `/api/v1/auditorias/semaforo/{idSemaforo:guid}` | Lista historico `INSERT`/`UPDATE`/`DELETE` por `id_semaforo`, preservado mesmo apos exclusao | Bearer JWT - `GESTOR` |
+
+---
+
+## 5. Arquitetura em Nuvem e Esteira CI/CD
+
+![Arquitetura em Nuvem e Esteira CI/CD](docs/arquitetura-travessia.png)
+
+O ecossistema conecta a API `.NET 10.0` em Clean Architecture ao Azure Key Vault via Managed Identity, Azure SQL Database PaaS com chaves `UNIQUEIDENTIFIER`, Azure App Service Linux no tier `F1` e automacao CI/CD por meio do pipeline multiestagio `azure-pipeline.yml`.
 
 ---
 
 ## 6. Exemplos de Payloads JSON, Idempotencia, Rate Limiting e ProblemDetails
 
-### 6.1. Autenticacao (`POST /api/v1/auth/register` e `POST /api/v1/auth/login`)
+### 6.1. Autenticacao
 
-#### Cadastro sem informar GUIDs (`POST /api/v1/auth/register`)
-O backend gera `idUsuario` (`Guid.NewGuid()`) e resolve automaticamente `idPerfil` pelo `codigoPerfil` informado ou pela idade (`>= 60` anos -> perfil `IDOSO`):
+#### Cadastro sem informar GUIDs
+O backend gera `idUsuario` via `Guid.NewGuid()` e resolve automaticamente `idPerfil` pelo `codigoPerfil` informado ou para o perfil `IDOSO` quando a idade for igual ou superior a 60 anos:
 
 **Request Body:**
 ```json
@@ -155,11 +166,11 @@ O backend gera `idUsuario` (`Guid.NewGuid()`) e resolve automaticamente `idPerfi
 }
 ```
 
-### 6.2. Acionamento Inteligente Seco vs. Tempestade e Idempotencia (`POST /api/v1/acionamentos`)
+### 6.2. Acionamento Inteligente Seco vs. Tempestade e Idempotencia
 
 Header enviado na requisicao: `Idempotency-Key: idem-rain-1794430182`
 
-#### Cenario A — Clima `SECO` (Perfil `CADEIRANTE`, `BEACON-SP-001`, `larguraViaM = 18.50m`)
+#### Cenario A — Clima `SECO` no perfil `CADEIRANTE`, `BEACON-SP-001` e `larguraViaM = 18.50m`
 **Request Body:**
 ```json
 {
@@ -188,8 +199,8 @@ Header enviado na requisicao: `Idempotency-Key: idem-rain-1794430182`
 }
 ```
 
-#### Cenario B — Clima `TEMPESTADE` (`25.0mm`) e Replay Idempotente
-**Request Body (com header `Idempotency-Key: idem-rain-1794430182`):**
+#### Cenario B — Clima `TEMPESTADE` com `25.0mm` e Replay Idempotente
+**Request Body usando `Idempotency-Key: idem-rain-1794430182`:**
 ```json
 {
   "codigoBeacon": "BEACON-SP-001",
@@ -217,9 +228,9 @@ Header enviado na requisicao: `Idempotency-Key: idem-rain-1794430182`
 }
 ```
 
-### 6.3. Validacoes de Dominio (`400 Bad Request` - RFC 7807 `ProblemDetails`)
+### 6.3. Validacoes de Dominio RFC 7807 `ProblemDetails`
 
-#### Distancia do Sensor Fora do Limite (`distanciaSensorM = 8.5m > 5.0m`)
+#### Distancia do Sensor Fora do Limite — `8.5m > 5.0m`
 ```json
 {
   "type": "about:blank",
@@ -230,7 +241,7 @@ Header enviado na requisicao: `Idempotency-Key: idem-rain-1794430182`
 }
 ```
 
-#### Consentimento LGPD Negado (`consentimentoLgpd = "N"`)
+#### Consentimento LGPD Negado — `consentimentoLgpd = "N"`
 ```json
 {
   "type": "about:blank",
@@ -241,7 +252,7 @@ Header enviado na requisicao: `Idempotency-Key: idem-rain-1794430182`
 }
 ```
 
-### 6.4. Rate Limiting (`429 Too Many Requests` com Header `Retry-After: 60`)
+### 6.4. Rate Limiting — `429 Too Many Requests` com `Retry-After: 60`
 
 ```json
 {
@@ -294,12 +305,12 @@ Nenhuma senha, chave JWT ou connection string existe em `appsettings.json` ou `a
 
 | Chave / Variavel | Descricao | Origem em Producao |
 |---|---|---|
-| `KEYVAULT_URI` | URI do Azure Key Vault (`https://kv-travessia-564361.vault.azure.net/`) | App Settings do Web App |
-| `ConnectionStrings__DefaultConnection` | String de conexao SQL Server (ou SQLite local quando vazia) | Azure Key Vault (`ConnectionStrings--DefaultConnection`) |
-| `JwtSettings__SecretKey` | Chave HMAC-SHA256 de assinatura JWT | Azure Key Vault (`JwtSettings--SecretKey`) |
-| `ASPNETCORE_ENVIRONMENT` | Ambiente de execucao (`Development` / `Production`) | App Settings (`Production`) |
-| `RateLimiting__PermitLimit` | Limite de requisicoes por janela (`30` por padrao) | `appsettings.json` / Env |
-| `RateLimiting__WindowSeconds` | Duracao da janela fixa em segundos (`60` por padrao) | `appsettings.json` / Env |
+| `KEYVAULT_URI` | URI do Azure Key Vault `https://kv-travessia-564361.vault.azure.net/` | App Settings do Web App |
+| `ConnectionStrings__DefaultConnection` | String de conexao SQL Server ou SQLite local em ausencia de configuracao | Azure Key Vault `ConnectionStrings--DefaultConnection` |
+| `JwtSettings__SecretKey` | Chave HMAC-SHA256 de assinatura JWT | Azure Key Vault `JwtSettings--SecretKey` |
+| `ASPNETCORE_ENVIRONMENT` | Ambiente de execucao entre `Development` e `Production` | App Settings `Production` |
+| `RateLimiting__PermitLimit` | Limite de requisicoes por janela — padrao `30` | `appsettings.json` / Env |
+| `RateLimiting__WindowSeconds` | Duracao da janela fixa em segundos — padrao `60` | `appsettings.json` / Env |
 
 ### Configuracao Segura Local via `dotnet user-secrets`
 
@@ -311,11 +322,11 @@ dotnet user-secrets set "JwtSettings:SecretKey" "<CHAVE_LOCAL_DESENVOLVIMENTO_MI
 
 ---
 
-## 8. Instrucoes de Instalacao, Execucao Local e Testes Automatizados (xUnit)
+## 8. Instrucoes de Instalacao, Execucao Local e Testes Automatizados
 
 ### Pre-requisitos
 - `.NET SDK 10.0`
-- SQL Server / Azure SQL Database (opcional localmente; sem `DefaultConnection`, a API utiliza SQLite local `travessia-local.db` automaticamente)
+- SQL Server ou Azure SQL Database. Sem `DefaultConnection`, a API utiliza o banco SQLite local `travessia-local.db` automaticamente.
 
 ### Passos de Instalacao, Build e Execucao
 
@@ -330,9 +341,9 @@ dotnet build TravessIA.sln --configuration Release
 dotnet run --project TravessIA.API/TravessIA.API.csproj
 ```
 
-### Suite de Testes Automatizados (`xUnit`)
+### Suite de Testes Automatizados `xUnit`
 
-A solucao conta com **35 testes automatizados**
+A solucao conta com **35 testes automatizados**:
 
 ```bash
 dotnet test TravessIA.sln --configuration Release
@@ -340,22 +351,22 @@ dotnet test TravessIA.sln --configuration Release
 
 Cobertura validada pelos 35 testes:
 - Calculo de extensao de travessia seco vs. chuva moderada vs. tempestade nos 5 perfis prioritarios.
-- Fator de largura da via (`largura_via_m`) e bonus de seguranca `+5s` em tempestade.
-- Trava fisica de distancia do sensor (`0.1m` a `5.0m`), bloqueio de semaforo em `MANUTENCAO` e negacao LGPD (`'N'`).
-- Fluxo JWT completo (`/register`, `/login`, `/me`), barreiras `401 Unauthorized` e `403 Forbidden` (`CIDADAO` vs `GESTOR`).
-- CRUD completo nas tabelas principais, trilha automatica `INSERT`/`UPDATE`/`DELETE` em `TB_AUDITORIA_SEMAFORO`, replay idempotente (`X-Idempotent-Replayed: true`), Rate Limiting (`429`) e Health Check em 3 camadas (`/health`).
+- Fator de largura da via `largura_via_m` e bonus de seguranca de `+5s` em tempestade.
+- Trava fisica de distancia do sensor entre `0.1m` e `5.0m`, bloqueio de semaforo em `MANUTENCAO` e negacao LGPD `'N'`.
+- Fluxo JWT completo em `/register`, `/login` e `/me`, barreiras `401 Unauthorized` e `403 Forbidden` entre `CIDADAO` e `GESTOR`.
+- CRUD completo nas tabelas principais, trilha automatica `INSERT`, `UPDATE` e `DELETE` em `TB_AUDITORIA_SEMAFORO`, replay idempotente via `X-Idempotent-Replayed: true`, Rate Limiting `429` e Health Check em 3 camadas em `/health`.
 
 ---
 
 ## 9. Guia de Deploy, Monitoramento em Nuvem e Declaracao de Uso de IA Generativa
 
-### Provisionamento e Deploy em Nuvem (Azure)
-1. **Provisionamento IaC**: Execute `./scripts/provision-azure.sh` (com `SQL_ADMIN_PASSWORD`, `SQL_CONNECTION_STRING` e `JWT_SECRET_KEY` exportadas na sessao) para criar `rg-travessia-gs2026`, `plan-travessia-free` (`F1`), `webapp-travessia-rm564361` (com Managed Identity), `sql-travessia-rm564361` (`sqldb-travessia`), `kv-travessia-564361` (`Key Vault Secrets User`) e aplicar `/scripts/script-bd.sql`.
-2. **Esteira CI/CD (`azure-pipeline.yml`)**: No repositorio de entrega DevOps (branch `master`), cada merge aprovado executa `Build`, testes `xUnit`, publicacao do artefato `drop` e deploy automatizado via `AzureWebApp@1`.
-3. **Monitoramento em 3 Camadas (`/health`)**: A rota `https://webapp-travessia-rm564361.azurewebsites.net/health` inspeciona continuamente `"api-self"` (disponibilidade da Minimal API), `"database"` (`TravessIAContext` conectado ao `sqldb-travessia`) e `"external-weather-and-keyvault"` (motor de telemetria climatica/IA + URI configurada do Key Vault).
+### Provisionamento e Deploy em Nuvem
+1. **Provisionamento IaC**: Execute `./scripts/provision-azure.sh` com as variaveis `SQL_ADMIN_PASSWORD`, `SQL_CONNECTION_STRING` e `JWT_SECRET_KEY` exportadas na sessao para criar `rg-travessia-gs2026`, `plan-travessia-free`, `webapp-travessia-rm564361` com Managed Identity, `sql-travessia-rm564361` com `sqldb-travessia`, `kv-travessia-564361` com papel `Key Vault Secrets User` e aplicar `/scripts/script-bd.sql`.
+2. **Esteira CI/CD `azure-pipeline.yml`**: No repositorio de entrega DevOps em branch `master`, cada merge aprovado executa `Build`, testes `xUnit`, publicacao do artefato `drop` e deploy automatizado via `AzureWebApp@1`.
+3. **Monitoramento em 3 Camadas `/health`**: A rota `https://webapp-travessia-rm564361.azurewebsites.net/health` inspeciona continuamente `"api-self"` para disponibilidade da Minimal API, `"database"` para conexao do `TravessIAContext` ao `sqldb-travessia` e `"external-weather-and-keyvault"` para o motor climatico/IA e URI configurada do Key Vault.
 
 ### Declaracao Obrigatoria de Uso de Inteligencia Artificial Generativa
 Em conformidade com as diretrizes academicas da FIAP para a Global Solution 2026/2, declaramos que ferramentas de Inteligencia Artificial Generativa foram utilizadas como apoio assistido no desenvolvimento desta solucao:
 1. **Arquitetura e Padronizacao de Codigo**: Auxilio na estruturacao da Clean Architecture em `.NET 10.0`, configuracao das Minimal APIs, Fluent API do Entity Framework Core e descritores Swagger.
-2. **Qualidade, Testes e Automacao**: Apoio na escrita de cenarios de teste `xUnit`, scripts de provisionamento (`scripts/provision-azure.sh`, `scripts/script-bd.sql`) e documentacao.
-3. **Validacao e Autoria Humana**: Todas as regras de dominio, modelagem relacional, politicas de seguranca JWT/LGPD, integracao com Azure Key Vault e testes reais contra a nuvem foram integralmente revisados, executados e validados pelo grupo, que assume total responsabilidade tecnica pelo projeto entregue.
+2. **Qualidade, Testes e Automacao**: Apoio na escrita de cenarios de teste `xUnit`, scripts de provisionamento `scripts/provision-azure.sh` e `scripts/script-bd.sql`, alem da documentacao tecnica.
+3. **Validacao e Autoria Humana**: Todas as regras de dominio, modelagem relacional, politicas de seguranca JWT e LGPD, integracao com Azure Key Vault e testes reais contra a nuvem foram integralmente revisados, executados e validados pelo grupo, que assume total responsabilidade tecnica pelo projeto entregue.
